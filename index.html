@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Analysis Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header class="main-header fade-in">
+            <div class="header-left">
+                <div class="logo-icon">🧬</div>
+                <h1>NGS Analysis Dashboard</h1>
+            </div>
+        </header>
+
+        <nav class="nav-tabs fade-in" id="year-nav">
+            <!-- Tabs injected by JS -->
+        </nav>
+
+        <main class="fade-in">
+            <!-- Data View -->
+            <div id="data-view" class="vziew-section">
+                <div class="card">
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label>Year</label>
+                            <select id="year-filter"></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Month</label>
+                            <select id="month-filter">
+                                <option value="all">All Months</option>
+                                <option value="0">Jan</option>
+                                <option value="1">Feb</option>
+                                <option value="2">Mar</option>
+                                <option value="3">Apr</option>
+                                <option value="4">May</option>
+                                <option value="5">Jun</option>
+                                <option value="6">Jul</option>
+                                <option value="7">Aug</option>
+                                <option value="8">Sep</option>
+                                <option value="9">Oct</option>
+                                <option value="10">Nov</option>
+                                <option value="11">Dec</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Test Type</label>
+                            <select id="test-filter">
+                                <option value="all">All Tests</option>
+                            </select>
+                        </div>
+                    </div>
+                    <h2 id="table-title">Detailed Monthly Breakdown</h2>
+                    <div class="table-container" id="table-content"></div>
+                </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="analytics-view" class="view-section" style="display: none;">
+                <div class="analytics-layout">
+                    <div class="analytics-main">
+                        <!-- Bar Chart Card -->
+                        <div class="card chart-card">
+                            <div class="chart-header">
+                                <div class="header-titles">
+                                    <h3>Category-wise Analysis</h3>
+                                    <p>Sample volume comparison by category</p>
+                                </div>
+                                <div class="header-actions">
+                                    <span class="badge badge-indigo">Bar Chart</span>
+                                    <span class="badge badge-light" id="bar-total-label">Total: 0</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="monthlyTotalChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Pie Chart Card -->
+                        <div class="card chart-card">
+                            <div class="chart-header">
+                                <div class="header-titles">
+                                    <h3>Test-wise Sample Count</h3>
+                                    <p>Distribution of samples by test type</p>
+                                </div>
+                                <div class="header-actions">
+                                    <span class="badge badge-purple">Pie Chart</span>
+                                    <span class="badge badge-light" id="pie-total-label">Total: 0</span>
+                                </div>
+                            </div>
+                            <div class="chart-container pie-container">
+                                <canvas id="testPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <aside class="sidebar-filters card">
+                        <div class="sidebar-section">
+                            <label class="sidebar-label">YEAR</label>
+                            <select id="analytics-year-filter"></select>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <label class="sidebar-label">MONTH</label>
+                            <select id="analytics-month-filter">
+                                <option value="all">All Months</option>
+                                <option value="0">January</option>
+                                <option value="1">February</option>
+                                <option value="2">March</option>
+                                <option value="3">April</option>
+                                <option value="4">May</option>
+                                <option value="5">June</option>
+                                <option value="6">July</option>
+                                <option value="7">August</option>
+                                <option value="8">September</option>
+                                <option value="9">October</option>
+                                <option value="10">November</option>
+                                <option value="11">December</option>
+                            </select>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <div class="section-header">
+                                <label class="sidebar-label">TESTS</label>
+                                <div class="header-links">
+                                    <span onclick="selectAllTests()">Select All</span>
+                                    <span onclick="clearAllTests()">Clear</span>
+                                </div>
+                            </div>
+                            <div class="checklist-container" id="tests-checklist">
+                                <!-- Checkboxes injected by JS -->
+                            </div>
+                        </div>
+
+                        <div class="sidebar-section">
+                            <label class="sidebar-label">MANUAL SEARCH</label>
+                            <input type="text" id="test-search" placeholder="Type test name..."
+                                oninput="filterChecklist()">
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js?v=7.0"></script>
+</body>
+
+</html>
