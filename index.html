@@ -1,336 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sample Analysis Dashboard</title>
+    <title>NGS Analysis Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
         :root {
-            --blue: #1fa6df;
-            --blue-dark: #1495cf;
-            --ink: #1f2b43;
-            --muted: #667792;
-            --line: #e9edf3;
-            --page: #f5f8fc;
-            --card: #ffffff;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-primary: #1e1b4b;
+            --text-secondary: #64748b;
+            --accent-color: #6366f1; /* Indigo */
+            --accent-hover: #4f46e5;
+            --border-color: #e2e8f0;
+            --purple: #8b5cf6;
+            --indigo: #6366f1;
+            --font-main: 'Plus Jakarta Sans', sans-serif;
         }
 
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            margin: 0;
-            min-height: 100vh;
-            background: var(--page);
-            color: var(--ink);
-            font-family: "Plus Jakarta Sans", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .container {
-            width: min(1420px, calc(100% - 48px));
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 12px 0 28px;
+            padding: 1.5rem;
         }
 
+        /* Header */
         .main-header {
-            padding: 0 0 44px;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem 0;
         }
 
         .header-left {
             display: flex;
-            justify-content: center;
+            align-items: center;
+            gap: 1rem;
         }
 
         .logo-icon {
-            display: none;
-        }
-
-        h1 {
-            margin: 0 0 20px;
-            color: #3d95ed;
-            font-size: clamp(2.35rem, 4vw, 3.9rem);
-            font-weight: 800;
-            line-height: 1.08;
-        }
-
-        .main-header p {
-            margin: 0;
-            color: var(--muted);
-            font-size: clamp(1rem, 1.5vw, 1.45rem);
-            font-weight: 500;
-        }
-
-        .nav-tabs {
+            font-size: 2rem;
+            background: white;
+            width: 50px;
+            height: 50px;
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-        }
-
-        .tab-button {
-            min-width: 100px;
-            height: 54px;
-            padding: 0 30px;
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            background: #fff;
-            color: #243049;
-            cursor: pointer;
-            font: inherit;
-            font-size: 1rem;
-            font-weight: 800;
-            box-shadow: 0 1px 1px rgba(31, 43, 67, 0.02);
-            transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
-        }
-
-        .tab-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 22px rgba(31, 43, 67, 0.08);
-        }
-
-        .tab-button.active {
-            border-color: var(--blue);
-            background: var(--blue);
-            color: #fff;
-            box-shadow: 0 12px 22px rgba(31, 166, 223, 0.28);
-        }
-
-        .card {
-            background: var(--card);
-            border: 1px solid var(--line);
-            border-radius: 28px;
-            box-shadow: 0 22px 48px rgba(31, 43, 67, 0.08);
-        }
-
-        #data-view > .card {
-            padding: 48px 40px 40px;
-        }
-
-        #table-title {
-            margin: 0 0 64px;
-            color: var(--ink);
-            font-size: clamp(1.55rem, 2vw, 2rem);
-            font-weight: 800;
-        }
-
-        .filter-bar {
-            display: flex;
-            gap: 18px;
-            flex-wrap: wrap;
-            margin-bottom: 34px;
-        }
-
-        .filter-group {
-            display: grid;
-            gap: 8px;
-        }
-
-        .filter-group label,
-        .sidebar-label {
-            color: var(--muted);
-            font-size: 0.78rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        select,
-        input {
-            height: 44px;
-            min-width: 160px;
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 0 14px;
-            background: #fff;
-            color: var(--ink);
-            font: inherit;
-            font-weight: 600;
-        }
-
-        .total-count-panel .filter-bar {
-            display: none;
-        }
-
-        .total-count-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(180px, 1fr));
-            gap: 30px;
-        }
-
-        .total-count-card {
-            min-height: 180px;
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            border: 1px solid var(--line);
-            border-radius: 22px;
-            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .total-count-year {
-            color: #687994;
-            font-size: 1rem;
+        .main-header h1 {
+            font-size: 1.5rem;
             font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            color: var(--indigo);
         }
 
-        .total-count-value {
-            margin-top: 22px;
-            color: var(--blue);
-            font-size: clamp(2.5rem, 4.3vw, 3.45rem);
-            font-weight: 800;
-            line-height: 1;
+        /* Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
 
-        .table-container {
-            overflow-x: auto;
+        .tab-btn {
+            padding: 0.6rem 1.2rem;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 860px;
+        .tab-btn.active {
+            background: var(--indigo);
+            color: white;
+            border-color: var(--indigo);
         }
 
-        th,
-        td {
-            border-bottom: 1px solid var(--line);
-            padding: 14px 16px;
-            text-align: left;
-            white-space: nowrap;
-        }
-
-        th {
-            color: var(--muted);
-            font-size: 0.78rem;
-            letter-spacing: 0.07em;
-            text-transform: uppercase;
-        }
-
+        /* Layout */
         .analytics-layout {
             display: grid;
-            grid-template-columns: 1fr 290px;
-            gap: 24px;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+            align-items: flex-start;
         }
 
         .analytics-main {
-            display: grid;
-            gap: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
-        .chart-card,
-        .sidebar-filters {
-            padding: 28px;
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
         }
 
         .chart-header {
             display: flex;
             justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 18px;
+            align-items: flex-start;
+            margin-bottom: 2rem;
         }
 
-        .chart-header h3 {
-            margin: 0 0 6px;
+        .header-titles h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
         }
 
-        .chart-header p {
-            margin: 0;
-            color: var(--muted);
+        .header-titles p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-indigo { background: #e0e7ff; color: #4338ca; }
+        .badge-purple { background: #f3e8ff; color: #7e22ce; }
+        .badge-light { background: #f1f5f9; color: #475569; }
+
+        /* Sidebar */
+        .sidebar-filters {
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-links {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--indigo);
+        }
+
+        .header-links span {
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+
+        .header-links span:hover { text-decoration: underline; }
+
+        /* Summary Stats */
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .summary-card.interactive {
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .summary-card.interactive:hover {
+            border-color: var(--indigo);
+            background: #f8fafc;
+        }
+
+        .card-footer {
+            font-size: 0.7rem;
+            color: var(--indigo);
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--indigo);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: #f8fafc;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--indigo);
+            background: white;
+        }
+
+        /* Checklist */
+        .checklist-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .check-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--indigo);
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        /* Charts */
         .chart-container {
+            height: 400px;
             position: relative;
         }
 
         .pie-container {
-            max-width: 480px;
-            margin: 0 auto;
+            height: 500px;
         }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            height: 30px;
-            padding: 0 12px;
-            border-radius: 999px;
-            background: #eef6ff;
-            color: var(--blue-dark);
-            font-weight: 800;
-            font-size: 0.78rem;
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
         }
 
-        .sidebar-filters,
-        .sidebar-section {
-            display: grid;
-            gap: 18px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .sidebar-section {
-            gap: 10px;
-        }
-
-        .checklist-container {
-            display: grid;
-            gap: 8px;
-            max-height: 260px;
-            overflow: auto;
-        }
-
-        @media (max-width: 980px) {
-            .total-count-grid {
-                grid-template-columns: repeat(2, minmax(160px, 1fr));
-            }
-
-            .analytics-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 620px) {
-            .container {
-                width: min(100% - 28px, 1420px);
-            }
-
-            #data-view > .card {
-                padding: 30px 20px;
-                border-radius: 22px;
-            }
-
-            .nav-tabs {
-                gap: 12px;
-                margin-bottom: 24px;
-            }
-
-            .tab-button {
-                min-width: 88px;
-                height: 48px;
-                padding: 0 18px;
-            }
-
-            .total-count-grid {
-                grid-template-columns: 1fr;
-                gap: 18px;
-            }
+        @media (max-width: 1000px) {
+            .analytics-layout { grid-template-columns: 1fr; }
+            .sidebar-filters { position: static; }
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header class="main-header fade-in">
             <div class="header-left">
                 <div class="logo-icon">🧬</div>
-                <div>
-                    <h1>Sample Analysis Dashboard</h1>
-                    <p>Tracking monthly sample counts from 2022 to 2026</p>
-                </div>
+                <h1>NGS Analysis Dashboard</h1>
             </div>
         </header>
 
@@ -339,62 +362,67 @@
         </nav>
 
         <main class="fade-in">
-            <!-- Data View -->
             <div id="data-view" class="view-section">
                 <div class="card">
-                    <div class="filter-bar">
-                        <div class="filter-group">
-                            <label>Year</label>
+                    <h2 id="table-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">System Summary</h2>
+                    <div class="filter-bar" style="display: none; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <div class="filter-group" style="flex: 1; min-width: 150px;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Year</label>
                             <select id="year-filter"></select>
                         </div>
-                        <div class="filter-group">
-                            <label>Month</label>
+                        <div class="filter-group" style="flex: 1; min-width: 150px;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Month</label>
                             <select id="month-filter">
                                 <option value="all">All Months</option>
-                                <option value="0">Jan</option>
-                                <option value="1">Feb</option>
-                                <option value="2">Mar</option>
-                                <option value="3">Apr</option>
-                                <option value="4">May</option>
-                                <option value="5">Jun</option>
-                                <option value="6">Jul</option>
-                                <option value="7">Aug</option>
-                                <option value="8">Sep</option>
-                                <option value="9">Oct</option>
-                                <option value="10">Nov</option>
-                                <option value="11">Dec</option>
+                                <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
+                                <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
+                                <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
+                                <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
                             </select>
                         </div>
-                        <div class="filter-group">
-                            <label>Test Type</label>
+                        <div class="filter-group" style="flex: 1; min-width: 150px;">
+                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Test Type</label>
                             <select id="test-filter">
                                 <option value="all">All Tests</option>
                             </select>
                         </div>
                     </div>
-                    <h2 id="table-title">Detailed Monthly Breakdown</h2>
                     <div class="table-container" id="table-content"></div>
                 </div>
             </div>
 
-            <!-- Analytics View -->
             <div id="analytics-view" class="view-section" style="display: none;">
                 <div class="analytics-layout">
                     <div class="analytics-main">
-                        <!-- Pie Chart Card -->
                         <div class="card chart-card">
                             <div class="chart-header">
                                 <div class="header-titles">
-                                    <h3>Monthly Sample Distribution</h3>
-                                    <p>Total count per month across selected tests</p>
+                                    <h3>Category-wise Analysis</h3>
+                                    <p>Sample volume comparison by category</p>
                                 </div>
                                 <div class="header-actions">
-                                    <span class="badge">Pie Chart</span>
-                                    <span class="badge" id="pie-total-label">Total: 0</span>
+                                    <span class="badge badge-indigo">Bar Chart</span>
+                                    <span class="badge badge-light" id="bar-total-label">Total: 0</span>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="monthlyTotalChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card chart-card">
+                            <div class="chart-header">
+                                <div class="header-titles">
+                                    <h3 id="pie-chart-title">Test-wise Sample Count</h3>
+                                    <p>Distribution of samples by test type</p>
+                                </div>
+                                <div class="header-actions">
+                                    <span class="badge badge-purple">Pie Chart</span>
+                                    <span class="badge badge-light" id="pie-total-label">Total: 0</span>
                                 </div>
                             </div>
                             <div class="chart-container pie-container">
-                                <canvas id="monthlyPieChart"></canvas>
+                                <canvas id="testPieChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -403,6 +431,17 @@
                         <div class="sidebar-section">
                             <label class="sidebar-label">YEAR</label>
                             <select id="analytics-year-filter"></select>
+                        </div>
+                        
+                        <div class="sidebar-section">
+                            <label class="sidebar-label">MONTH</label>
+                            <select id="analytics-month-filter">
+                                <option value="all">All Months</option>
+                                <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                                <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                                <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                                <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                            </select>
                         </div>
 
                         <div class="sidebar-section">
@@ -413,15 +452,12 @@
                                     <span onclick="clearAllTests()">Clear</span>
                                 </div>
                             </div>
-                            <div class="checklist-container" id="tests-checklist">
-                                <!-- Checkboxes injected by JS -->
-                            </div>
+                            <div class="checklist-container" id="tests-checklist"></div>
                         </div>
 
                         <div class="sidebar-section">
                             <label class="sidebar-label">MANUAL SEARCH</label>
-                            <input type="text" id="test-search" placeholder="Type test name..."
-                                oninput="filterChecklist()">
+                            <input type="text" id="test-search" placeholder="Type test name..." oninput="filterChecklist()">
                         </div>
                     </aside>
                 </div>
@@ -429,377 +465,337 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
-        const TAB_ORDER = ["2024", "2025", "2026", "TOTAL COUNT", "NGS", "NICS", "ANALYTICS"];
-        const MONTH_KEYS = [
-            "Unnamed: 2",
-            "Unnamed: 3",
-            "Unnamed: 4",
-            "Unnamed: 5",
-            "Unnamed: 6",
-            "Unnamed: 7",
-            "Unnamed: 8",
-            "Unnamed: 9",
-            "Unnamed: 10",
-            "Unnamed: 11",
-            "Unnamed: 12",
-            "Unnamed: 13"
-        ];
-        const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const FALLBACK_HISTORICAL_YEARS = {
-            2018: 33,
-            2019: 38,
-            2020: 103,
-            2021: 254,
-            2022: 382,
-            2023: 757
-        };
+        let dashboardData = {};
+        let currentYear = '';
+        let currentDataFilters = { month: 'all', test: 'all' };
+        let analyticsFilters = { year: '', month: 'all', selectedTests: new Set() };
 
-        let dashboardData = { HISTORICAL_YEARS: FALLBACK_HISTORICAL_YEARS };
-        let activeTab = "TOTAL COUNT";
+        let barChartInstance = null;
+        let pieChartInstance = null;
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            await loadData();
-            setupTabs();
-            setupFilters();
-            activateTab(activeTab);
-        });
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const chartColors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#2dd4bf'];
 
-        async function loadData() {
+        Chart.register(ChartDataLabels);
+
+        function isYearSheet(key) {
+            return /^\d{4}$/.test(key);
+        }
+
+        async function init() {
             try {
-                const response = await fetch("data.json");
-                if (response.ok) {
-                    dashboardData = await response.json();
-                }
+                const response = await fetch('data.json');
+                dashboardData = await response.json();
+                const years = Object.keys(dashboardData);
+                
+                setupNav(years);
+                setupDataFilters(years);
+                setupAnalyticsFilters(years);
+                
+                const defaultView = years.includes('TOTAL COUNT') ? 'TOTAL COUNT' : years[0];
+                const targetBtn = Array.from(document.querySelectorAll('.tab-btn'))
+                    .find(btn => btn.textContent === defaultView);
+                renderYear(defaultView, targetBtn);
             } catch (error) {
-                dashboardData = { HISTORICAL_YEARS: FALLBACK_HISTORICAL_YEARS };
+                console.error('Error loading data:', error);
             }
         }
 
-        function setupTabs() {
-            const nav = document.getElementById("year-nav");
-            nav.innerHTML = TAB_ORDER.map(tab => (
-                `<button class="tab-button" type="button" data-tab="${tab}">${tab}</button>`
-            )).join("");
+        function setupNav(years) {
+            const nav = document.getElementById('year-nav');
+            nav.innerHTML = '';
+            const categorySheets = years.filter(year => !isYearSheet(year) && year !== 'HISTORICAL_YEARS');
+            
+            categorySheets.forEach((year) => {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn';
+                btn.textContent = year;
+                btn.onclick = () => renderYear(year, btn);
+                nav.appendChild(btn);
+            });
 
-            nav.addEventListener("click", event => {
-                const button = event.target.closest(".tab-button");
-                if (!button) return;
-                activateTab(button.dataset.tab);
+            const analyticsBtn = document.createElement('button');
+            analyticsBtn.className = 'tab-btn';
+            analyticsBtn.textContent = 'ANALYTICS';
+            analyticsBtn.onclick = () => showAnalytics(analyticsBtn);
+            nav.appendChild(analyticsBtn);
+        }
+
+        function setupDataFilters(years) {
+            const yearSelect = document.getElementById('year-filter');
+            const monthSelect = document.getElementById('month-filter');
+            const testSelect = document.getElementById('test-filter');
+
+            const validYears = years.filter(isYearSheet);
+            validYears.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y.replace('SAMPLES ANALYSED IN ', '');
+                yearSelect.appendChild(opt);
+            });
+            if (validYears.length > 0) analyticsFilters.year = validYears[0];
+
+            yearSelect.onchange = (e) => {
+                analyticsFilters.year = e.target.value;
+                if (document.getElementById('analytics-view').style.display === 'flex') updateAnalytics();
+            };
+            monthSelect.onchange = (e) => { currentDataFilters.month = e.target.value; applyDataFilters(); };
+            testSelect.onchange = (e) => { currentDataFilters.test = e.target.value; applyDataFilters(); };
+        }
+
+        function setupAnalyticsFilters(years) {
+            const yearSelect = document.getElementById('analytics-year-filter');
+            const monthSelect = document.getElementById('analytics-month-filter');
+            const validYears = years.filter(isYearSheet);
+            
+            yearSelect.innerHTML = '';
+            validYears.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y.replace('SAMPLES ANALYSED IN ', '');
+                yearSelect.appendChild(opt);
+            });
+
+            yearSelect.onchange = (e) => { 
+                analyticsFilters.year = e.target.value; 
+                populateTestsChecklist();
+                updateAnalytics(); 
+            };
+            monthSelect.onchange = (e) => { analyticsFilters.month = e.target.value; updateAnalytics(); };
+            populateTestsChecklist();
+        }
+
+        function populateTestsChecklist() {
+            const container = document.getElementById('tests-checklist');
+            if (!analyticsFilters.year || !dashboardData[analyticsFilters.year]) return;
+            const data = processYearData(dashboardData[analyticsFilters.year]);
+            const tests = [...new Set(data.map(item => item.category))].sort();
+            container.innerHTML = '';
+            analyticsFilters.selectedTests.clear();
+            tests.forEach(test => {
+                analyticsFilters.selectedTests.add(test);
+                const item = document.createElement('label');
+                item.className = 'check-item';
+                item.innerHTML = `<input type="checkbox" checked onchange="toggleTest('${test}', this.checked)"><span>${test}</span>`;
+                container.appendChild(item);
             });
         }
 
-        function setupFilters() {
-            const yearFilter = document.getElementById("year-filter");
-            const testFilter = document.getElementById("test-filter");
-            const monthFilter = document.getElementById("month-filter");
-
-            yearFilter.innerHTML = ["2024", "2025", "2026"]
-                .map(year => `<option value="${year}">${year}</option>`)
-                .join("");
-
-            [yearFilter, testFilter, monthFilter].forEach(control => {
-                control.addEventListener("change", () => renderCurrentDataView());
-            });
-        }
-
-        function activateTab(tab) {
-            activeTab = tab;
-            document.querySelectorAll(".tab-button").forEach(button => {
-                button.classList.toggle("active", button.dataset.tab === tab);
-            });
-
-            const dataView = document.getElementById("data-view");
-            const analyticsView = document.getElementById("analytics-view");
-            dataView.style.display = tab === "ANALYTICS" ? "none" : "block";
-            analyticsView.style.display = tab === "ANALYTICS" ? "block" : "none";
-
-            if (tab === "ANALYTICS") {
-                renderAnalytics();
-                return;
-            }
-
-            renderCurrentDataView();
-        }
-
-        function renderCurrentDataView() {
-            const dataCard = document.querySelector("#data-view > .card");
-            dataCard.classList.toggle("total-count-panel", activeTab === "TOTAL COUNT");
-
-            if (activeTab === "TOTAL COUNT") {
-                renderTotalCount();
-                return;
-            }
-
-            if (activeTab === "NGS" || activeTab === "NICS") {
-                document.querySelector(".filter-bar").style.display = "none";
-                renderSheet(activeTab);
-                return;
-            }
-
-            const yearFilter = document.getElementById("year-filter");
-            const testFilter = document.getElementById("test-filter");
-            document.querySelector(".filter-bar").style.display = "";
-
-            const selectedYear = ["2024", "2025", "2026"].includes(activeTab) ? activeTab : yearFilter.value || "2024";
-            yearFilter.value = selectedYear;
-            populateTestFilter(selectedYear);
-            renderTable(selectedYear, testFilter.value);
-        }
-
-        function renderTotalCount() {
-            document.getElementById("table-title").textContent = "Yearly Cumulative Samples";
-            const totals = getHistoricalTotals();
-            const cards = Object.entries(totals)
-                .sort(([yearA], [yearB]) => Number(yearA) - Number(yearB))
-                .map(([year, count]) => `
-                    <article class="total-count-card">
-                        <div class="total-count-year">Year ${year}</div>
-                        <div class="total-count-value">${formatNumber(count)}</div>
-                    </article>
-                `).join("");
-
-            document.getElementById("table-content").innerHTML = `<div class="total-count-grid">${cards}</div>`;
-        }
-
-        function getHistoricalTotals() {
-            if (dashboardData.HISTORICAL_YEARS) {
-                return dashboardData.HISTORICAL_YEARS;
-            }
-
-            const rows = dashboardData["TOTAL COUNT"];
-            if (!Array.isArray(rows) || rows.length < 2) {
-                return FALLBACK_HISTORICAL_YEARS;
-            }
-
-            const yearsRow = rows[0];
-            const countsRow = rows[1];
-            return Object.keys(yearsRow).reduce((totals, key) => {
-                const year = yearsRow[key];
-                const count = countsRow[key];
-                if (Number.isFinite(Number(year)) && Number.isFinite(Number(count))) {
-                    totals[year] = count;
-                }
-                return totals;
-            }, {});
-        }
-
-        function populateTestFilter(year) {
-            const testFilter = document.getElementById("test-filter");
-            const currentValue = testFilter.value;
-            const rows = getDataRows(year);
-            const tests = rows.map(row => row["Unnamed: 1"]).filter(Boolean);
-            testFilter.innerHTML = `<option value="all">All Tests</option>${tests
-                .map(test => `<option value="${escapeHtml(test)}">${escapeHtml(test)}</option>`)
-                .join("")}`;
-            testFilter.value = tests.includes(currentValue) ? currentValue : "all";
-        }
-
-        function renderTable(year, selectedTest) {
-            document.getElementById("table-title").textContent = `${year} Monthly Sample Breakdown`;
-            const rows = getDataRows(year).filter(row => selectedTest === "all" || row["Unnamed: 1"] === selectedTest);
-
-            const tableRows = rows.map(row => {
-                const total = MONTH_KEYS.reduce((sum, key) => sum + (Number(row[key]) || 0), 0);
-                const monthCells = MONTH_KEYS.map(key => `<td>${formatCell(row[key])}</td>`).join("");
-                return `<tr><td>${formatCell(row[`NUMBER OF SAMPLES ANALYSED IN ${year}`])}</td><td>${escapeHtml(row["Unnamed: 1"] || "")}</td>${monthCells}<td>${formatNumber(total)}</td></tr>`;
-            }).join("");
-
-            document.getElementById("table-content").innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>S.No</th>
-                            <th>Test Name</th>
-                            ${MONTH_LABELS.map(month => `<th>${month}</th>`).join("")}
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableRows}</tbody>
-                </table>
-            `;
-        }
-
-        function renderSheet(sheetName) {
-            const rows = dashboardData[sheetName];
-            document.getElementById("table-title").textContent = `${sheetName} Sample Breakdown`;
-
-            if (!Array.isArray(rows) || rows.length === 0) {
-                document.getElementById("table-content").innerHTML = "";
-                return;
-            }
-
-            const headerRow = rows[0];
-            const keys = Object.keys(headerRow).filter(key => headerRow[key] !== null && headerRow[key] !== undefined);
-            const bodyRows = rows.slice(1).filter(row => row && Object.values(row).some(value => value !== null && value !== ""));
-
-            document.getElementById("table-content").innerHTML = `
-                <table>
-                    <thead>
-                        <tr>${keys.map(key => `<th>${formatCell(headerRow[key])}</th>`).join("")}</tr>
-                    </thead>
-                    <tbody>
-                        ${bodyRows.map(row => `
-                            <tr>${keys.map(key => `<td>${formatCell(row[key])}</td>`).join("")}</tr>
-                        `).join("")}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        function getDataRows(key) {
-            const rows = dashboardData[key];
-            if (!Array.isArray(rows)) return [];
-            return rows.slice(1).filter(row => row && row["Unnamed: 1"]);
-        }
-
-        let monthlyPieChart = null;
-        let analyticsInitialized = false;
-
-        const PIE_COLORS = [
-            "#1fa6df", "#3d95ed", "#6c63ff", "#ff6b6b", "#feca57",
-            "#48dbfb", "#ff9ff3", "#54a0ff", "#f0932b", "#01aaa4",
-            "#f368e0", "#ff9f43"
-        ];
-
-        function renderAnalytics() {
-            if (!analyticsInitialized) {
-                initAnalyticsSidebar();
-                analyticsInitialized = true;
-            }
-            updatePieChart();
-        }
-
-        function initAnalyticsSidebar() {
-            const yearSelect = document.getElementById("analytics-year-filter");
-            yearSelect.innerHTML = `<option value="all">All Years</option>` +
-                ["2024", "2025", "2026"].map(y => `<option value="${y}">${y}</option>`).join("");
-            yearSelect.addEventListener("change", () => {
-                rebuildChecklist();
-                updatePieChart();
-            });
-            document.getElementById("test-search").addEventListener("input", filterChecklist);
-            rebuildChecklist();
-        }
-
-        function rebuildChecklist() {
-            const year = document.getElementById("analytics-year-filter").value;
-            const years = year === "all" ? ["2024", "2025", "2026"] : [year];
-            const allTests = new Set();
-            years.forEach(y => getDataRows(y).forEach(row => {
-                if (row["Unnamed: 1"]) allTests.add(row["Unnamed: 1"]);
-            }));
-
-            const checklist = document.getElementById("tests-checklist");
-            checklist.innerHTML = [...allTests].sort().map(test => `
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem;">
-                    <input type="checkbox" class="test-checkbox" value="${escapeHtml(test)}" checked>
-                    ${escapeHtml(test)}
-                </label>
-            `).join("");
-            checklist.querySelectorAll(".test-checkbox").forEach(cb =>
-                cb.addEventListener("change", updatePieChart)
-            );
-        }
-
-        function updatePieChart() {
-            const year = document.getElementById("analytics-year-filter").value;
-            const selectedTests = new Set(
-                [...document.querySelectorAll(".test-checkbox:checked")].map(cb => cb.value)
-            );
-            const years = year === "all" ? ["2024", "2025", "2026"] : [year];
-
-            const monthTotals = new Array(12).fill(0);
-            years.forEach(y => {
-                getDataRows(y)
-                    .filter(row => selectedTests.has(row["Unnamed: 1"]))
-                    .forEach(row => {
-                        MONTH_KEYS.forEach((key, idx) => {
-                            monthTotals[idx] += Number(row[key]) || 0;
-                        });
-                    });
-            });
-
-            const total = monthTotals.reduce((a, b) => a + b, 0);
-            document.getElementById("pie-total-label").textContent = `Total: ${formatNumber(total)}`;
-
-            const ctx = document.getElementById("monthlyPieChart").getContext("2d");
-            if (monthlyPieChart) {
-                monthlyPieChart.data.datasets[0].data = monthTotals;
-                monthlyPieChart.update();
-                return;
-            }
-
-            monthlyPieChart = new Chart(ctx, {
-                type: "pie",
-                data: {
-                    labels: MONTH_LABELS,
-                    datasets: [{
-                        data: monthTotals,
-                        backgroundColor: PIE_COLORS,
-                        borderWidth: 2,
-                        borderColor: "#fff"
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: "right" },
-                        tooltip: {
-                            callbacks: {
-                                label: (ctx) => {
-                                    const value = ctx.parsed;
-                                    const pct = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
-                                    return ` ${ctx.label}: ${formatNumber(value)} (${pct}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+        function toggleTest(test, isChecked) {
+            if (isChecked) analyticsFilters.selectedTests.add(test);
+            else analyticsFilters.selectedTests.delete(test);
+            updateAnalytics();
         }
 
         function selectAllTests() {
-            document.querySelectorAll(".test-checkbox").forEach(cb => cb.checked = true);
-            updatePieChart();
+            document.querySelectorAll('#tests-checklist input').forEach(cb => { cb.checked = true; analyticsFilters.selectedTests.add(cb.nextElementSibling.textContent); });
+            updateAnalytics();
         }
 
         function clearAllTests() {
-            document.querySelectorAll(".test-checkbox").forEach(cb => cb.checked = false);
-            updatePieChart();
+            document.querySelectorAll('#tests-checklist input').forEach(cb => { cb.checked = false; analyticsFilters.selectedTests.clear(); });
+            updateAnalytics();
         }
 
         function filterChecklist() {
-            const search = document.getElementById("test-search").value.toLowerCase();
-            document.querySelectorAll("#tests-checklist label").forEach(label => {
-                label.style.display = label.textContent.toLowerCase().includes(search) ? "" : "none";
+            const query = document.getElementById('test-search').value.toUpperCase();
+            document.querySelectorAll('.check-item').forEach(item => {
+                item.style.display = item.querySelector('span').textContent.toUpperCase().includes(query) ? 'flex' : 'none';
             });
         }
 
-        function formatCell(value) {
-            if (value === null || value === undefined || value === "") return "-";
-            if (Number.isFinite(Number(value))) return formatNumber(value);
-            return escapeHtml(value);
+        function calculateTotals() {
+            let totalAll = 0, ngsTotal = 0, nicsTotal = 0, analyticsTotal = 0;
+            const yearlyBreakdown = [];
+            const addedYears = new Set();
+            if (dashboardData['NGS']) ngsTotal = processYearData(dashboardData['NGS']).reduce((sum, item) => sum + item.total, 0);
+            if (dashboardData['NICS']) nicsTotal = processYearData(dashboardData['NICS']).reduce((sum, item) => sum + item.total, 0);
+
+            if (dashboardData['HISTORICAL_YEARS']) {
+                Object.entries(dashboardData['HISTORICAL_YEARS']).forEach(([year, count]) => {
+                    const numericCount = Number(count) || 0;
+                    yearlyBreakdown.push({ year: String(year), count: numericCount });
+                    addedYears.add(String(year));
+                    totalAll += numericCount;
+                });
+            }
+
+            Object.keys(dashboardData).forEach(key => {
+                if (isYearSheet(key)) {
+                    const yearSum = processYearData(dashboardData[key]).reduce((sum, item) => sum + item.total, 0);
+                    totalAll += yearSum;
+                    const yearLabel = String(key);
+                    yearlyBreakdown.push({ year: yearLabel, count: yearSum });
+                    addedYears.add(yearLabel);
+                    if (key === analyticsFilters.year) analyticsTotal = yearSum;
+                }
+            });
+            if (dashboardData['TOTAL COUNT']) {
+                const rows = dashboardData['TOTAL COUNT'];
+                const yearsRow = rows.find(r => r['Unnamed: 0'] === 'YEAR');
+                const countsRow = rows.find(r => r['Unnamed: 0'] === 'COUNT');
+                if (yearsRow && countsRow) {
+                    Object.keys(yearsRow).forEach(key => {
+                        if (key === 'Unnamed: 0') return;
+                        const yr = String(yearsRow[key]);
+                        const cnt = Number(countsRow[key]) || 0;
+                        if (/^\d{4}$/.test(yr) && !addedYears.has(yr)) {
+                            yearlyBreakdown.push({ year: yr, count: cnt });
+                            totalAll += cnt;
+                        }
+                    });
+                }
+            }
+            return { totalAll, ngsTotal, nicsTotal, analyticsTotal, yearlyBreakdown };
         }
 
-        function formatNumber(value) {
-            return Number(value).toLocaleString("en-US");
+        function renderYear(year, btn) {
+            currentYear = year;
+            document.getElementById('data-view').style.display = 'block';
+            document.getElementById('analytics-view').style.display = 'none';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            if (year === 'TOTAL COUNT') {
+                renderYearlySummary();
+            } else {
+                const container = document.getElementById('table-content');
+                const headerTitle = document.getElementById('table-title');
+                const filterBar = document.querySelector('#data-view .filter-bar');
+                headerTitle.textContent = `${year} Breakdown`;
+                filterBar.style.display = 'flex';
+                populateTestDropdown(dashboardData[year]);
+                renderTable(dashboardData[year], container);
+            }
         }
 
-        function escapeHtml(value) {
-            return String(value)
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
+        function renderYearlySummary() {
+            const container = document.getElementById('table-content');
+            const headerTitle = document.getElementById('table-title');
+            const filterBar = document.querySelector('#data-view .filter-bar');
+            headerTitle.textContent = "Year-wise Total Breakdown";
+            filterBar.style.display = 'none';
+            const allYears = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+            const totals = calculateTotals();
+            const yearLookup = {};
+            totals.yearlyBreakdown.forEach(item => { yearLookup[item.year] = item.count; });
+            let html = `<div class="summary-stats fade-in"><div class="summary-card"><span class="summary-label">TOTAL COUNT</span><span class="summary-value">${totals.totalAll.toLocaleString()}</span></div>`;
+            allYears.forEach(year => {
+                const yearStr = String(year);
+                const count = yearLookup[yearStr] || 0;
+                const hasData = dashboardData[yearStr] && count > 0;
+                if (hasData) {
+                    html += `<div class="summary-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
+                } else {
+                    html += `<div class="summary-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
+                }
+            });
+            container.innerHTML = html + '</div>';
         }
 
-        function selectAllTests() {}
-        function clearAllTests() {}
-        function filterChecklist() {}
+        function renderYearTable(year) {
+            const container = document.getElementById('table-content');
+            const headerTitle = document.getElementById('table-title');
+            headerTitle.textContent = `${year} — Monthly Breakdown`;
+            const dataRows = dashboardData[year];
+            if (!dataRows) { container.innerHTML = '<p>No data available.</p>'; return; }
+            const data = processYearData(dataRows);
+            let html = `<div style="margin-bottom: 1.5rem;"><button class="tab-btn" onclick="renderYearlySummary()">← Back to Year Overview</button></div><table><thead><tr><th>Sample Category</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+            data.forEach(item => {
+                html += `<tr><td style="font-weight: 600;">${item.category}</td>${item.monthly.map(v => `<td>${v || '-'}</td>`).join('')}<td style="font-weight: 800; color: var(--accent-color);">${item.total}</td></tr>`;
+            });
+            container.innerHTML = html + '</tbody></table>';
+        }
+
+        function showAnalytics(btn) {
+            document.getElementById('data-view').style.display = 'none';
+            document.getElementById('analytics-view').style.display = 'flex';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateAnalytics();
+        }
+
+        function updateAnalytics() {
+            if (!analyticsFilters.year || !dashboardData[analyticsFilters.year]) return;
+            let data = processYearData(dashboardData[analyticsFilters.year]).filter(item => analyticsFilters.selectedTests.has(item.category));
+            updateBarChart(data);
+            updatePieChart(data);
+        }
+
+        function processYearData(rows) {
+            if (!rows) return [];
+            return rows.filter(row => row['Unnamed: 1'] && row['Unnamed: 1'] !== 'TOTAL' && row['Unnamed: 1'] !== 'S. No.' && !row['Unnamed: 1'].toString().includes('Sheet') && row['Unnamed: 1'] !== 'TEST NAME ')
+                .map(row => {
+                    const monthly = [row['Unnamed: 2'], row['Unnamed: 3'], row['Unnamed: 4'], row['Unnamed: 5'], row['Unnamed: 6'], row['Unnamed: 7'], row['Unnamed: 8'], row['Unnamed: 9'], row['Unnamed: 10'], row['Unnamed: 11'], row['Unnamed: 12'], row['Unnamed: 13']].map(v => (typeof v === 'number' ? v : 0));
+                    return { category: row['Unnamed: 1'].toString().toUpperCase(), monthly, total: monthly.reduce((a, b) => a + b, 0) };
+                }).filter(item => item.total > 0);
+        }
+
+        function populateTestDropdown(dataRows) {
+            const testSelect = document.getElementById('test-filter');
+            const data = processYearData(dataRows);
+            const tests = [...new Set(data.map(item => item.category))].sort();
+            testSelect.innerHTML = '<option value="all">All Tests</option>';
+            tests.forEach(test => {
+                const opt = document.createElement('option');
+                opt.value = test; opt.textContent = test;
+                if (test === currentDataFilters.test) opt.selected = true;
+                testSelect.appendChild(opt);
+            });
+        }
+
+        function applyDataFilters() { renderTable(dashboardData[currentYear], document.getElementById('table-content')); }
+
+        function renderTable(dataRows, container) {
+            let data = processYearData(dataRows);
+            if (currentDataFilters.test !== 'all') data = data.filter(item => item.category === currentDataFilters.test);
+            let indices = months.map((_, i) => i);
+            if (currentDataFilters.month !== 'all') indices = [parseInt(currentDataFilters.month)];
+            let html = `<table><thead><tr><th>Sample Category</th>${indices.map(i => `<th>${months[i]}</th>`).join('')}${currentDataFilters.month === 'all' ? '<th>Total</th>' : ''}</tr></thead><tbody>`;
+            data.forEach(item => { html += `<tr><td style="font-weight: 600;">${item.category}</td>${indices.map(i => `<td>${item.monthly[i] || '-'}</td>`).join('')}${currentDataFilters.month === 'all' ? `<td style="font-weight: 800; color: var(--accent-color);">${item.total}</td>` : ''}</tr>`; });
+            container.innerHTML = html + '</tbody></table>';
+        }
+
+        function updateBarChart(data) {
+            const ctx = document.getElementById('monthlyTotalChart').getContext('2d');
+            const totals = new Array(12).fill(0);
+            data.forEach(item => item.monthly.forEach((v, i) => totals[i] += v));
+            document.getElementById('bar-total-label').textContent = `Total: ${totals.reduce((a, b) => a + b, 0)}`;
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: months, datasets: [{ label: 'Samples', data: totals, backgroundColor: 'rgba(99, 102, 241, 0.8)', borderRadius: 6 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, datalabels: { anchor: 'end', align: 'top', color: '#4338ca', font: { weight: 'bold' } } }, scales: { y: { beginAtZero: true, grid: { display: false }, ticks: { display: false } }, x: { grid: { display: false }, ticks: { font: { weight: '600' } } } } }
+            });
+        }
+
+        function updatePieChart(data) {
+            const ctx = document.getElementById('testPieChart').getContext('2d');
+            const headerTitle = document.getElementById('pie-chart-title');
+            const subTitle = headerTitle.nextElementSibling;
+            let pData = [], pLabels = [];
+            if (analyticsFilters.selectedTests.size === 1) {
+                const testName = [...analyticsFilters.selectedTests][0];
+                const testData = data.find(item => item.category === testName);
+                headerTitle.textContent = `Monthly Distribution: ${testName}`;
+                if (subTitle) subTitle.textContent = "Distribution of samples by month";
+                if (testData) testData.monthly.forEach((val, i) => { if (val > 0) { pData.push(val); pLabels.push(months[i]); } });
+            } else {
+                headerTitle.textContent = "Test-wise Sample Count";
+                if (subTitle) subTitle.textContent = "Distribution of samples by test type";
+                data.forEach(item => {
+                    let val = analyticsFilters.month === 'all' ? item.total : item.monthly[parseInt(analyticsFilters.month)];
+                    if (val > 0) { pData.push(val); pLabels.push(item.category); }
+                });
+            }
+            document.getElementById('pie-total-label').textContent = `Total: ${pData.reduce((a, b) => a + b, 0)}`;
+            if (pieChartInstance) pieChartInstance.destroy();
+            pieChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: pLabels, datasets: [{ data: pData, backgroundColor: chartColors, borderWidth: 2, borderColor: '#ffffff' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { size: 11, weight: '600' } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, formatter: (value, ctx) => { const total = ctx.dataset.data.reduce((a, b) => a + b, 0); return (value * 100 / total).toFixed(0) > 5 ? value : ''; } } } }
+            });
+        }
+
+        init();
     </script>
 </body>
-
 </html>
