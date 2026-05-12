@@ -4,14 +4,313 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sample Analysis Tracker</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <title>Sample Analysis Dashboard</title>
+    <style>
+        :root {
+            --blue: #1fa6df;
+            --blue-dark: #1495cf;
+            --ink: #1f2b43;
+            --muted: #667792;
+            --line: #e9edf3;
+            --page: #f5f8fc;
+            --card: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--page);
+            color: var(--ink);
+            font-family: "Plus Jakarta Sans", Arial, sans-serif;
+        }
+
+        .container {
+            width: min(1420px, calc(100% - 48px));
+            margin: 0 auto;
+            padding: 12px 0 28px;
+        }
+
+        .main-header {
+            padding: 0 0 44px;
+            text-align: center;
+        }
+
+        .header-left {
+            display: flex;
+            justify-content: center;
+        }
+
+        .logo-icon {
+            display: none;
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            color: #3d95ed;
+            font-size: clamp(2.35rem, 4vw, 3.9rem);
+            font-weight: 800;
+            line-height: 1.08;
+        }
+
+        .main-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: clamp(1rem, 1.5vw, 1.45rem);
+            font-weight: 500;
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .tab-button {
+            min-width: 100px;
+            height: 54px;
+            padding: 0 30px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: #fff;
+            color: #243049;
+            cursor: pointer;
+            font: inherit;
+            font-size: 1rem;
+            font-weight: 800;
+            box-shadow: 0 1px 1px rgba(31, 43, 67, 0.02);
+            transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+
+        .tab-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(31, 43, 67, 0.08);
+        }
+
+        .tab-button.active {
+            border-color: var(--blue);
+            background: var(--blue);
+            color: #fff;
+            box-shadow: 0 12px 22px rgba(31, 166, 223, 0.28);
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            box-shadow: 0 22px 48px rgba(31, 43, 67, 0.08);
+        }
+
+        #data-view > .card {
+            padding: 48px 40px 40px;
+        }
+
+        #table-title {
+            margin: 0 0 64px;
+            color: var(--ink);
+            font-size: clamp(1.55rem, 2vw, 2rem);
+            font-weight: 800;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 34px;
+        }
+
+        .filter-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .filter-group label,
+        .sidebar-label {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        select,
+        input {
+            height: 44px;
+            min-width: 160px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 0 14px;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-weight: 600;
+        }
+
+        .total-count-panel .filter-bar {
+            display: none;
+        }
+
+        .total-count-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(180px, 1fr));
+            gap: 30px;
+        }
+
+        .total-count-card {
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            background: #fff;
+        }
+
+        .total-count-year {
+            color: #687994;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .total-count-value {
+            margin-top: 22px;
+            color: var(--blue);
+            font-size: clamp(2.5rem, 4.3vw, 3.45rem);
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 860px;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid var(--line);
+            padding: 14px 16px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        th {
+            color: var(--muted);
+            font-size: 0.78rem;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .analytics-layout {
+            display: grid;
+            grid-template-columns: 1fr 290px;
+            gap: 24px;
+        }
+
+        .analytics-main {
+            display: grid;
+            gap: 24px;
+        }
+
+        .chart-card,
+        .sidebar-filters {
+            padding: 28px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .chart-header h3 {
+            margin: 0 0 6px;
+        }
+
+        .chart-header p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 30px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: #eef6ff;
+            color: var(--blue-dark);
+            font-weight: 800;
+            font-size: 0.78rem;
+        }
+
+        .sidebar-filters,
+        .sidebar-section {
+            display: grid;
+            gap: 18px;
+        }
+
+        .sidebar-section {
+            gap: 10px;
+        }
+
+        .checklist-container {
+            display: grid;
+            gap: 8px;
+            max-height: 260px;
+            overflow: auto;
+        }
+
+        @media (max-width: 980px) {
+            .total-count-grid {
+                grid-template-columns: repeat(2, minmax(160px, 1fr));
+            }
+
+            .analytics-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 620px) {
+            .container {
+                width: min(100% - 28px, 1420px);
+            }
+
+            #data-view > .card {
+                padding: 30px 20px;
+                border-radius: 22px;
+            }
+
+            .nav-tabs {
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+
+            .tab-button {
+                min-width: 88px;
+                height: 48px;
+                padding: 0 18px;
+            }
+
+            .total-count-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -19,7 +318,10 @@
         <header class="main-header fade-in">
             <div class="header-left">
                 <div class="logo-icon">🧬</div>
-                <h1>NGS Analysis Dashboard</h1>
+                <div>
+                    <h1>Sample Analysis Dashboard</h1>
+                    <p>Tracking monthly sample counts from 2022 to 2026</p>
+                </div>
             </div>
         </header>
 
@@ -29,7 +331,7 @@
 
         <main class="fade-in">
             <!-- Data View -->
-            <div id="data-view" class="vziew-section">
+            <div id="data-view" class="view-section">
                 <div class="card">
                     <div class="filter-bar">
                         <div class="filter-group">
@@ -154,7 +456,268 @@
         </main>
     </div>
 
-    <script src="script.js?v=7.0"></script>
+    <script>
+        const TAB_ORDER = ["2024", "2025", "2026", "TOTAL COUNT", "NGS", "NICS", "ANALYTICS"];
+        const MONTH_KEYS = [
+            "Unnamed: 2",
+            "Unnamed: 3",
+            "Unnamed: 4",
+            "Unnamed: 5",
+            "Unnamed: 6",
+            "Unnamed: 7",
+            "Unnamed: 8",
+            "Unnamed: 9",
+            "Unnamed: 10",
+            "Unnamed: 11",
+            "Unnamed: 12",
+            "Unnamed: 13"
+        ];
+        const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "July", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const FALLBACK_HISTORICAL_YEARS = {
+            2018: 33,
+            2019: 38,
+            2020: 103,
+            2021: 254,
+            2022: 382,
+            2023: 757
+        };
+
+        let dashboardData = { HISTORICAL_YEARS: FALLBACK_HISTORICAL_YEARS };
+        let activeTab = "TOTAL COUNT";
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadData();
+            setupTabs();
+            setupFilters();
+            activateTab(activeTab);
+        });
+
+        async function loadData() {
+            try {
+                const response = await fetch("data.json");
+                if (response.ok) {
+                    dashboardData = await response.json();
+                }
+            } catch (error) {
+                dashboardData = { HISTORICAL_YEARS: FALLBACK_HISTORICAL_YEARS };
+            }
+        }
+
+        function setupTabs() {
+            const nav = document.getElementById("year-nav");
+            nav.innerHTML = TAB_ORDER.map(tab => (
+                `<button class="tab-button" type="button" data-tab="${tab}">${tab}</button>`
+            )).join("");
+
+            nav.addEventListener("click", event => {
+                const button = event.target.closest(".tab-button");
+                if (!button) return;
+                activateTab(button.dataset.tab);
+            });
+        }
+
+        function setupFilters() {
+            const yearFilter = document.getElementById("year-filter");
+            const testFilter = document.getElementById("test-filter");
+            const monthFilter = document.getElementById("month-filter");
+
+            yearFilter.innerHTML = ["2024", "2025", "2026"]
+                .map(year => `<option value="${year}">${year}</option>`)
+                .join("");
+
+            [yearFilter, testFilter, monthFilter].forEach(control => {
+                control.addEventListener("change", () => renderCurrentDataView());
+            });
+        }
+
+        function activateTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll(".tab-button").forEach(button => {
+                button.classList.toggle("active", button.dataset.tab === tab);
+            });
+
+            const dataView = document.getElementById("data-view");
+            const analyticsView = document.getElementById("analytics-view");
+            dataView.style.display = tab === "ANALYTICS" ? "none" : "block";
+            analyticsView.style.display = tab === "ANALYTICS" ? "block" : "none";
+
+            if (tab === "ANALYTICS") {
+                renderAnalytics();
+                return;
+            }
+
+            renderCurrentDataView();
+        }
+
+        function renderCurrentDataView() {
+            const dataCard = document.querySelector("#data-view > .card");
+            dataCard.classList.toggle("total-count-panel", activeTab === "TOTAL COUNT");
+
+            if (activeTab === "TOTAL COUNT") {
+                renderTotalCount();
+                return;
+            }
+
+            if (activeTab === "NGS" || activeTab === "NICS") {
+                document.querySelector(".filter-bar").style.display = "none";
+                renderSheet(activeTab);
+                return;
+            }
+
+            const yearFilter = document.getElementById("year-filter");
+            const testFilter = document.getElementById("test-filter");
+            document.querySelector(".filter-bar").style.display = "";
+
+            const selectedYear = ["2024", "2025", "2026"].includes(activeTab) ? activeTab : yearFilter.value || "2024";
+            yearFilter.value = selectedYear;
+            populateTestFilter(selectedYear);
+            renderTable(selectedYear, testFilter.value);
+        }
+
+        function renderTotalCount() {
+            document.getElementById("table-title").textContent = "Yearly Cumulative Samples";
+            const totals = getHistoricalTotals();
+            const cards = Object.entries(totals)
+                .sort(([yearA], [yearB]) => Number(yearA) - Number(yearB))
+                .map(([year, count]) => `
+                    <article class="total-count-card">
+                        <div class="total-count-year">Year ${year}</div>
+                        <div class="total-count-value">${formatNumber(count)}</div>
+                    </article>
+                `).join("");
+
+            document.getElementById("table-content").innerHTML = `<div class="total-count-grid">${cards}</div>`;
+        }
+
+        function getHistoricalTotals() {
+            if (dashboardData.HISTORICAL_YEARS) {
+                return dashboardData.HISTORICAL_YEARS;
+            }
+
+            const rows = dashboardData["TOTAL COUNT"];
+            if (!Array.isArray(rows) || rows.length < 2) {
+                return FALLBACK_HISTORICAL_YEARS;
+            }
+
+            const yearsRow = rows[0];
+            const countsRow = rows[1];
+            return Object.keys(yearsRow).reduce((totals, key) => {
+                const year = yearsRow[key];
+                const count = countsRow[key];
+                if (Number.isFinite(Number(year)) && Number.isFinite(Number(count))) {
+                    totals[year] = count;
+                }
+                return totals;
+            }, {});
+        }
+
+        function populateTestFilter(year) {
+            const testFilter = document.getElementById("test-filter");
+            const currentValue = testFilter.value;
+            const rows = getDataRows(year);
+            const tests = rows.map(row => row["Unnamed: 1"]).filter(Boolean);
+            testFilter.innerHTML = `<option value="all">All Tests</option>${tests
+                .map(test => `<option value="${escapeHtml(test)}">${escapeHtml(test)}</option>`)
+                .join("")}`;
+            testFilter.value = tests.includes(currentValue) ? currentValue : "all";
+        }
+
+        function renderTable(year, selectedTest) {
+            document.getElementById("table-title").textContent = `${year} Monthly Sample Breakdown`;
+            const rows = getDataRows(year).filter(row => selectedTest === "all" || row["Unnamed: 1"] === selectedTest);
+
+            const tableRows = rows.map(row => {
+                const total = MONTH_KEYS.reduce((sum, key) => sum + (Number(row[key]) || 0), 0);
+                const monthCells = MONTH_KEYS.map(key => `<td>${formatCell(row[key])}</td>`).join("");
+                return `<tr><td>${formatCell(row[`NUMBER OF SAMPLES ANALYSED IN ${year}`])}</td><td>${escapeHtml(row["Unnamed: 1"] || "")}</td>${monthCells}<td>${formatNumber(total)}</td></tr>`;
+            }).join("");
+
+            document.getElementById("table-content").innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Test Name</th>
+                            ${MONTH_LABELS.map(month => `<th>${month}</th>`).join("")}
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+            `;
+        }
+
+        function renderSheet(sheetName) {
+            const rows = dashboardData[sheetName];
+            document.getElementById("table-title").textContent = `${sheetName} Sample Breakdown`;
+
+            if (!Array.isArray(rows) || rows.length === 0) {
+                document.getElementById("table-content").innerHTML = "";
+                return;
+            }
+
+            const headerRow = rows[0];
+            const keys = Object.keys(headerRow).filter(key => headerRow[key] !== null && headerRow[key] !== undefined);
+            const bodyRows = rows.slice(1).filter(row => row && Object.values(row).some(value => value !== null && value !== ""));
+
+            document.getElementById("table-content").innerHTML = `
+                <table>
+                    <thead>
+                        <tr>${keys.map(key => `<th>${formatCell(headerRow[key])}</th>`).join("")}</tr>
+                    </thead>
+                    <tbody>
+                        ${bodyRows.map(row => `
+                            <tr>${keys.map(key => `<td>${formatCell(row[key])}</td>`).join("")}</tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function getDataRows(key) {
+            const rows = dashboardData[key];
+            if (!Array.isArray(rows)) return [];
+            return rows.slice(1).filter(row => row && row["Unnamed: 1"]);
+        }
+
+        function renderAnalytics() {
+            const analyticsView = document.getElementById("analytics-view");
+            analyticsView.innerHTML = `
+                <div class="card chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <h3>Analytics</h3>
+                            <p>Use the year, NGS, NICS, and total tabs to review the sample counts.</p>
+                        </div>
+                        <span class="badge">Dashboard</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatCell(value) {
+            if (value === null || value === undefined || value === "") return "-";
+            if (Number.isFinite(Number(value))) return formatNumber(value);
+            return escapeHtml(value);
+        }
+
+        function formatNumber(value) {
+            return Number(value).toLocaleString("en-US");
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function selectAllTests() {}
+        function clearAllTests() {}
+        function filterChecklist() {}
+    </script>
 </body>
 
 </html>
