@@ -245,6 +245,15 @@
             color: var(--muted);
         }
 
+        .chart-container {
+            position: relative;
+        }
+
+        .pie-container {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -372,37 +381,20 @@
             <div id="analytics-view" class="view-section" style="display: none;">
                 <div class="analytics-layout">
                     <div class="analytics-main">
-                        <!-- Bar Chart Card -->
-                        <div class="card chart-card">
-                            <div class="chart-header">
-                                <div class="header-titles">
-                                    <h3>Category-wise Analysis</h3>
-                                    <p>Sample volume comparison by category</p>
-                                </div>
-                                <div class="header-actions">
-                                    <span class="badge badge-indigo">Bar Chart</span>
-                                    <span class="badge badge-light" id="bar-total-label">Total: 0</span>
-                                </div>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="monthlyTotalChart"></canvas>
-                            </div>
-                        </div>
-
                         <!-- Pie Chart Card -->
                         <div class="card chart-card">
                             <div class="chart-header">
                                 <div class="header-titles">
-                                    <h3>Test-wise Sample Count</h3>
-                                    <p>Distribution of samples by test type</p>
+                                    <h3>Monthly Sample Distribution</h3>
+                                    <p>Total count per month across selected tests</p>
                                 </div>
                                 <div class="header-actions">
-                                    <span class="badge badge-purple">Pie Chart</span>
-                                    <span class="badge badge-light" id="pie-total-label">Total: 0</span>
+                                    <span class="badge">Pie Chart</span>
+                                    <span class="badge" id="pie-total-label">Total: 0</span>
                                 </div>
                             </div>
                             <div class="chart-container pie-container">
-                                <canvas id="testPieChart"></canvas>
+                                <canvas id="monthlyPieChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -411,25 +403,6 @@
                         <div class="sidebar-section">
                             <label class="sidebar-label">YEAR</label>
                             <select id="analytics-year-filter"></select>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <label class="sidebar-label">MONTH</label>
-                            <select id="analytics-month-filter">
-                                <option value="all">All Months</option>
-                                <option value="0">January</option>
-                                <option value="1">February</option>
-                                <option value="2">March</option>
-                                <option value="3">April</option>
-                                <option value="4">May</option>
-                                <option value="5">June</option>
-                                <option value="6">July</option>
-                                <option value="7">August</option>
-                                <option value="8">September</option>
-                                <option value="9">October</option>
-                                <option value="10">November</option>
-                                <option value="11">December</option>
-                            </select>
                         </div>
 
                         <div class="sidebar-section">
@@ -456,6 +429,7 @@
         </main>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <script>
         const TAB_ORDER = ["2024", "2025", "2026", "TOTAL COUNT", "NGS", "NICS", "ANALYTICS"];
         const MONTH_KEYS = [
@@ -680,19 +654,127 @@
             return rows.slice(1).filter(row => row && row["Unnamed: 1"]);
         }
 
+        let monthlyPieChart = null;
+        let analyticsInitialized = false;
+
+        const PIE_COLORS = [
+            "#1fa6df", "#3d95ed", "#6c63ff", "#ff6b6b", "#feca57",
+            "#48dbfb", "#ff9ff3", "#54a0ff", "#f0932b", "#01aaa4",
+            "#f368e0", "#ff9f43"
+        ];
+
         function renderAnalytics() {
-            const analyticsView = document.getElementById("analytics-view");
-            analyticsView.innerHTML = `
-                <div class="card chart-card">
-                    <div class="chart-header">
-                        <div>
-                            <h3>Analytics</h3>
-                            <p>Use the year, NGS, NICS, and total tabs to review the sample counts.</p>
-                        </div>
-                        <span class="badge">Dashboard</span>
-                    </div>
-                </div>
-            `;
+            if (!analyticsInitialized) {
+                initAnalyticsSidebar();
+                analyticsInitialized = true;
+            }
+            updatePieChart();
+        }
+
+        function initAnalyticsSidebar() {
+            const yearSelect = document.getElementById("analytics-year-filter");
+            yearSelect.innerHTML = `<option value="all">All Years</option>` +
+                ["2024", "2025", "2026"].map(y => `<option value="${y}">${y}</option>`).join("");
+            yearSelect.addEventListener("change", () => {
+                rebuildChecklist();
+                updatePieChart();
+            });
+            document.getElementById("test-search").addEventListener("input", filterChecklist);
+            rebuildChecklist();
+        }
+
+        function rebuildChecklist() {
+            const year = document.getElementById("analytics-year-filter").value;
+            const years = year === "all" ? ["2024", "2025", "2026"] : [year];
+            const allTests = new Set();
+            years.forEach(y => getDataRows(y).forEach(row => {
+                if (row["Unnamed: 1"]) allTests.add(row["Unnamed: 1"]);
+            }));
+
+            const checklist = document.getElementById("tests-checklist");
+            checklist.innerHTML = [...allTests].sort().map(test => `
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:0.88rem;">
+                    <input type="checkbox" class="test-checkbox" value="${escapeHtml(test)}" checked>
+                    ${escapeHtml(test)}
+                </label>
+            `).join("");
+            checklist.querySelectorAll(".test-checkbox").forEach(cb =>
+                cb.addEventListener("change", updatePieChart)
+            );
+        }
+
+        function updatePieChart() {
+            const year = document.getElementById("analytics-year-filter").value;
+            const selectedTests = new Set(
+                [...document.querySelectorAll(".test-checkbox:checked")].map(cb => cb.value)
+            );
+            const years = year === "all" ? ["2024", "2025", "2026"] : [year];
+
+            const monthTotals = new Array(12).fill(0);
+            years.forEach(y => {
+                getDataRows(y)
+                    .filter(row => selectedTests.has(row["Unnamed: 1"]))
+                    .forEach(row => {
+                        MONTH_KEYS.forEach((key, idx) => {
+                            monthTotals[idx] += Number(row[key]) || 0;
+                        });
+                    });
+            });
+
+            const total = monthTotals.reduce((a, b) => a + b, 0);
+            document.getElementById("pie-total-label").textContent = `Total: ${formatNumber(total)}`;
+
+            const ctx = document.getElementById("monthlyPieChart").getContext("2d");
+            if (monthlyPieChart) {
+                monthlyPieChart.data.datasets[0].data = monthTotals;
+                monthlyPieChart.update();
+                return;
+            }
+
+            monthlyPieChart = new Chart(ctx, {
+                type: "pie",
+                data: {
+                    labels: MONTH_LABELS,
+                    datasets: [{
+                        data: monthTotals,
+                        backgroundColor: PIE_COLORS,
+                        borderWidth: 2,
+                        borderColor: "#fff"
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: "right" },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => {
+                                    const value = ctx.parsed;
+                                    const pct = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+                                    return ` ${ctx.label}: ${formatNumber(value)} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function selectAllTests() {
+            document.querySelectorAll(".test-checkbox").forEach(cb => cb.checked = true);
+            updatePieChart();
+        }
+
+        function clearAllTests() {
+            document.querySelectorAll(".test-checkbox").forEach(cb => cb.checked = false);
+            updatePieChart();
+        }
+
+        function filterChecklist() {
+            const search = document.getElementById("test-search").value.toLowerCase();
+            document.querySelectorAll("#tests-checklist label").forEach(label => {
+                label.style.display = label.textContent.toLowerCase().includes(search) ? "" : "none";
+            });
         }
 
         function formatCell(value) {
