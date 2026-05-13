@@ -49,10 +49,11 @@
         /* Header */
         .main-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 2rem;
-            padding: 1rem 0;
+            margin-bottom: 2.5rem;
+            padding: 1.5rem 0;
+            text-align: center;
         }
 
         .header-left {
@@ -74,9 +75,10 @@
         }
 
         .main-header h1 {
-            font-size: 1.5rem;
+            font-size: 2.75rem;
             font-weight: 800;
             color: var(--indigo);
+            letter-spacing: -0.02em;
         }
 
         /* Tabs */
@@ -305,7 +307,11 @@
         }
 
         .home-stat-card .summary-label {
-            font-size: 0.9rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.8;
+            letter-spacing: 0.02em;
         }
 
         .summary-card.interactive {
@@ -337,10 +343,12 @@
         }
 
         .home-stat-card .summary-value {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            line-height: 1.1;
+            font-size: clamp(3.5rem, 8vw, 5.5rem);
+            font-weight: 900;
+            line-height: 1;
             color: #000000;
-            margin: 0.2rem 0;
+            margin: 0.1rem 0;
+            letter-spacing: -0.03em;
         }
 
         .home-stat-card .summary-label,
