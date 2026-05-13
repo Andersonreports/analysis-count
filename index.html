@@ -118,11 +118,14 @@
         .modal-container {
             background: white;
             width: 90%;
-            max-width: 450px;
+            max-width: 720px;
+            max-height: min(88vh, 900px);
             border-radius: 20px;
             padding: 2rem;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
             animation: modalSlide 0.3s ease-out;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes modalSlide {
@@ -132,6 +135,13 @@
 
         .modal-header {
             margin-bottom: 1.5rem;
+        }
+
+        .modal-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1rem;
         }
 
         .modal-header h3 {
@@ -154,14 +164,77 @@
             letter-spacing: 0.05em;
         }
 
+        .modal-body {
+            overflow-y: auto;
+            padding-right: 0.35rem;
+        }
+
         .modal-footer {
             display: flex;
             gap: 1rem;
             margin-top: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding-top: 1rem;
         }
 
         .modal-footer button {
             flex: 1;
+        }
+
+        .modal-status {
+            width: 100%;
+            min-height: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .modal-status.error {
+            color: #dc2626;
+        }
+
+        .modal-status.success {
+            color: #059669;
+        }
+
+        .test-count-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .test-count-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 130px;
+            gap: 0.85rem;
+            align-items: center;
+        }
+
+        .test-count-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .test-count-input {
+            margin: 0;
+        }
+
+        .test-count-empty {
+            padding: 1rem;
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            background: #f8fafc;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
         }
 
         .header-left {
@@ -602,10 +675,6 @@
                 <h1>NGS Analysis Dashboard</h1>
             </div>
             <div class="header-actions-group">
-                <a href="https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992" 
-                   target="_blank" class="sheet-btn">
-                    📊 Open Live Sheet
-                </a>
                 <button class="sheet-btn add-btn" onclick="openAddCountModal()">
                     ➕ Add Count
                 </button>
@@ -616,6 +685,7 @@
         <div class="modal-overlay" id="addCountModal">
             <div class="modal-container">
                 <div class="modal-header">
+                    <button class="tab-btn back-btn modal-back-btn" onclick="closeAddCountModal()">← Back</button>
                     <h3>Update Sample Count</h3>
                 </div>
                 <div class="modal-body">
@@ -624,17 +694,31 @@
                         <select id="modal-year-select"></select>
                     </div>
                     <div class="form-field">
-                        <label>Test Name</label>
-                        <select id="modal-test-select"></select>
+                        <label>Month</label>
+                        <select id="modal-month-select">
+                            <option value="0">Jan</option>
+                            <option value="1">Feb</option>
+                            <option value="2">Mar</option>
+                            <option value="3">Apr</option>
+                            <option value="4">May</option>
+                            <option value="5">Jun</option>
+                            <option value="6">Jul</option>
+                            <option value="7">Aug</option>
+                            <option value="8">Sep</option>
+                            <option value="9">Oct</option>
+                            <option value="10">Nov</option>
+                            <option value="11">Dec</option>
+                        </select>
                     </div>
                     <div class="form-field">
-                        <label>Count to Add</label>
-                        <input type="number" id="modal-count-input" placeholder="e.g. 150">
+                        <label>Enter Counts</label>
+                        <div id="modal-test-counts" class="test-count-list"></div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="tab-btn" onclick="closeAddCountModal()">Cancel</button>
-                    <button class="tab-btn active" onclick="saveNewCount()">Save Changes</button>
+                    <div id="modal-save-status" class="modal-status"></div>
+                    <div class="modal-footer">
+                        <button class="tab-btn" onclick="closeAddCountModal()">Cancel</button>
+                        <button id="modal-save-button" class="tab-btn active" onclick="saveNewCount()">Save Changes</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -779,6 +863,11 @@
         let barChartInstance = null;
         let pieChartInstance = null;
         let yearlyTrendChartInstance = null;
+        const LIVE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992';
+        const SHEET_API_URL = '';
+        const SHEET_ID = getSheetIdFromUrl(LIVE_SHEET_URL);
+        const LOCAL_DATA_URL = 'data.json';
+        const LOCAL_STORAGE_KEY = 'analysis-count-dashboard-data';
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const chartColors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#2dd4bf'];
@@ -789,15 +878,176 @@
             return /^\d{4}$/.test(key);
         }
 
+        function getSheetIdFromUrl(url) {
+            const match = String(url || '').match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            return match ? match[1] : '';
+        }
+
+        function getMonthColumnKey(monthIndex) {
+            return `Unnamed: ${monthIndex + 2}`;
+        }
+
+        function getSheetApiUrl(action = 'data', extraParams = {}) {
+            if (!SHEET_API_URL) return '';
+            const url = new URL(SHEET_API_URL);
+            url.searchParams.set('action', action);
+            Object.entries(extraParams).forEach(([key, value]) => {
+                if (value !== undefined && value !== null && value !== '') {
+                    url.searchParams.set(key, value);
+                }
+            });
+            return url.toString();
+        }
+
+        async function fetchDashboardData() {
+            const localData = getStoredDashboardData();
+            if (!SHEET_API_URL && localData) {
+                return localData;
+            }
+
+            const sourceUrl = getSheetApiUrl('data', { sheetId: SHEET_ID }) || LOCAL_DATA_URL;
+            const response = await fetch(sourceUrl, { cache: 'no-store' });
+            if (!response.ok) {
+                throw new Error(`Failed to load dashboard data (${response.status})`);
+            }
+            const result = await response.json();
+            if (result && result.success === false) {
+                throw new Error(result.message || 'Failed to load dashboard data.');
+            }
+            const nextData = result && result.data ? result.data : result;
+            if (!SHEET_API_URL) {
+                storeDashboardData(nextData);
+            }
+            return nextData;
+        }
+
+        function getStoredDashboardData() {
+            try {
+                const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('Unable to read local dashboard data:', error);
+                return null;
+            }
+        }
+
+        function storeDashboardData(data) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+            } catch (error) {
+                console.warn('Unable to store local dashboard data:', error);
+            }
+        }
+
+        function applyCountUpdatesLocally(year, monthIndex, updates) {
+            const nextData = JSON.parse(JSON.stringify(dashboardData));
+            const yearRows = nextData[year];
+            if (!Array.isArray(yearRows)) {
+                throw new Error(`No data found for year ${year}.`);
+            }
+
+            const monthKey = getMonthColumnKey(monthIndex);
+            const normalizedUpdates = new Map(
+                updates.map(item => [item.test.trim().toUpperCase(), Number(item.count) || 0])
+            );
+
+            let totalRow = null;
+            yearRows.forEach(row => {
+                const testName = String(row['Unnamed: 1'] || '').trim().toUpperCase();
+                if (testName === 'TOTAL') {
+                    totalRow = row;
+                    return;
+                }
+                if (!normalizedUpdates.has(testName)) {
+                    return;
+                }
+
+                row[monthKey] = normalizedUpdates.get(testName);
+                const total = months.reduce((sum, _, idx) => sum + (Number(row[getMonthColumnKey(idx)]) || 0), 0);
+                row['TOTAL COUNT'] = total;
+            });
+
+            if (totalRow) {
+                months.forEach((_, idx) => {
+                    const key = getMonthColumnKey(idx);
+                    totalRow[key] = yearRows.reduce((sum, row) => {
+                        const testName = String(row['Unnamed: 1'] || '').trim().toUpperCase();
+                        if (!testName || testName === 'TEST NAME' || testName === 'TOTAL') return sum;
+                        return sum + (Number(row[key]) || 0);
+                    }, 0);
+                });
+                totalRow['TOTAL COUNT'] = months.reduce((sum, _, idx) => sum + (Number(totalRow[getMonthColumnKey(idx)]) || 0), 0);
+            }
+
+            const totalCountRows = nextData['TOTAL COUNT'];
+            if (Array.isArray(totalCountRows) && totalRow) {
+                const yearsRow = totalCountRows.find(row => String(row['Unnamed: 0'] || '').trim().toUpperCase() === 'YEAR');
+                const countsRow = totalCountRows.find(row => String(row['Unnamed: 0'] || '').trim().toUpperCase() === 'COUNT');
+                if (yearsRow && countsRow) {
+                    Object.keys(yearsRow).forEach(key => {
+                        if (key === 'Unnamed: 0') return;
+                        if (String(yearsRow[key]).trim() === String(year)) {
+                            countsRow[key] = Number(totalRow['TOTAL COUNT']) || 0;
+                        }
+                    });
+                }
+            }
+
+            storeDashboardData(nextData);
+            return nextData;
+        }
+
+        function applyDashboardData(nextData) {
+            dashboardData = nextData;
+            const years = Object.keys(dashboardData);
+
+            document.getElementById('year-filter').innerHTML = '';
+            document.getElementById('test-filter').innerHTML = '';
+            document.getElementById('analytics-year-filter').innerHTML = '';
+            document.getElementById('bar-year-filter').innerHTML = '';
+            document.getElementById('tests-checklist').innerHTML = '';
+
+            currentDataFilters = { month: 'all', test: 'all' };
+            analyticsFilters = { year: '', month: 'all', selectedTests: new Set() };
+
+            document.getElementById('month-filter').value = 'all';
+            document.getElementById('analytics-month-filter').value = 'all';
+
+            setupDataFilters(years);
+            setupAnalyticsFilters(years);
+        }
+
+        async function refreshDashboardData() {
+            applyDashboardData(await fetchDashboardData());
+        }
+
+        function setModalStatus(message = '', type = '') {
+            const status = document.getElementById('modal-save-status');
+            status.textContent = message;
+            status.className = `modal-status${type ? ` ${type}` : ''}`;
+        }
+
+        function setModalSavingState(isSaving) {
+            const saveButton = document.getElementById('modal-save-button');
+            const cancelButton = document.querySelector('#addCountModal .modal-footer button');
+            const inputs = document.querySelectorAll('#addCountModal select, #addCountModal input');
+
+            if (saveButton) {
+                saveButton.disabled = isSaving;
+                saveButton.textContent = isSaving ? 'Saving...' : 'Save Changes';
+            }
+            if (cancelButton) {
+                cancelButton.disabled = isSaving;
+            }
+            inputs.forEach(input => {
+                input.disabled = isSaving;
+            });
+        }
+
         async function init() {
             try {
-                const response = await fetch('data.json');
-                dashboardData = await response.json();
+                applyDashboardData(await fetchDashboardData());
                 const years = Object.keys(dashboardData);
-
-                setupDataFilters(years);
-                setupAnalyticsFilters(years);
-
                 const defaultView = years.includes('TOTAL COUNT') ? 'TOTAL COUNT' : years[0];
                 renderYear(defaultView);
             } catch (error) {
@@ -1217,48 +1467,150 @@
         function openAddCountModal() {
             const modal = document.getElementById('addCountModal');
             const yearSelect = document.getElementById('modal-year-select');
-            const testSelect = document.getElementById('modal-test-select');
+            const monthSelect = document.getElementById('modal-month-select');
+            setModalStatus(SHEET_API_URL
+                ? 'Changes will be saved to the live sheet and refreshed here.'
+                : '');
             
             // Populate Years
-            const years = Object.keys(dashboardData).filter(isYearSheet);
+            const years = Object.keys(dashboardData).filter(isYearSheet).sort((a, b) => Number(b) - Number(a));
             yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
-            
-            // Populate Tests (default to first year)
             if (years.length > 0) {
-                updateModalTests(years[0]);
+                yearSelect.value = years[0];
             }
             
-            yearSelect.onchange = (e) => updateModalTests(e.target.value);
+            const currentMonthIndex = new Date().getMonth();
+            monthSelect.value = String(currentMonthIndex);
+
+            // Populate test count inputs (default to first year)
+            if (years.length > 0) {
+                renderModalTestInputs(yearSelect.value, currentMonthIndex);
+            }
+            
+            yearSelect.onchange = () => renderModalTestInputs(yearSelect.value, monthSelect.value);
+            monthSelect.onchange = () => renderModalTestInputs(yearSelect.value, monthSelect.value);
             
             modal.style.display = 'flex';
         }
 
-        function updateModalTests(year) {
-            const testSelect = document.getElementById('modal-test-select');
+        function renderModalTestInputs(year, monthIndex) {
+            const testCountsContainer = document.getElementById('modal-test-counts');
             const data = processYearData(dashboardData[year]);
-            const tests = [...new Set(data.map(item => item.category))].sort();
-            testSelect.innerHTML = tests.map(t => `<option value="${t}">${t}</option>`).join('');
+            const tests = [...new Set(data.map(item => item.category))].sort((a, b) => a.localeCompare(b));
+
+            if (!tests.length) {
+                testCountsContainer.innerHTML = '<div class="test-count-empty">No tests found for the selected year.</div>';
+                return;
+            }
+
+            testCountsContainer.innerHTML = tests.map(test => {
+                const safeTest = test.replace(/"/g, '&quot;');
+                const currentEntry = data.find(item => item.category === test);
+                const currentCount = currentEntry ? Number(currentEntry.monthly[Number(monthIndex)]) || 0 : 0;
+                return `
+                    <div class="test-count-item">
+                        <div class="test-count-name">${test}</div>
+                        <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            class="test-count-input"
+                            data-test-name="${safeTest}"
+                            data-original-count="${currentCount}"
+                            placeholder="0"
+                            value="${currentCount > 0 ? currentCount : ''}">
+                    </div>`;
+            }).join('');
         }
 
         function closeAddCountModal() {
             document.getElementById('addCountModal').style.display = 'none';
-            document.getElementById('modal-count-input').value = '';
+            document.getElementById('modal-test-counts').innerHTML = '';
+            setModalStatus('');
         }
 
-        function saveNewCount() {
+        async function saveNewCount() {
             const year = document.getElementById('modal-year-select').value;
-            const test = document.getElementById('modal-test-select').value;
-            const count = parseInt(document.getElementById('modal-count-input').value);
-            
-            if (isNaN(count) || count <= 0) {
-                alert('Please enter a valid count number.');
+            const monthIndex = parseInt(document.getElementById('modal-month-select').value, 10);
+            const monthName = months[monthIndex];
+            const countInputs = [...document.querySelectorAll('#modal-test-counts .test-count-input')];
+            const updates = countInputs
+                .map(input => ({
+                    test: input.dataset.testName,
+                    count: parseInt(input.value, 10),
+                    originalCount: parseInt(input.dataset.originalCount || '0', 10)
+                }))
+                .filter(item => !isNaN(item.count) && item.count >= 0 && item.count !== item.originalCount)
+                .map(({ test, count }) => ({ test, count }));
+
+            if (!updates.length) {
+                setModalStatus('Change at least one count before saving.', 'error');
                 return;
             }
-            
-            // Note: Since we don't have a backend, this change is only for the current session.
-            // In a real app, you would send this to a server.
-            alert(`Count of ${count} for ${test} in ${year} submitted successfully!\n(Note: Persistent updates require a backend integration)`);
-            closeAddCountModal();
+
+            setModalSavingState(true);
+            setModalStatus(`Saving ${updates.length} entries for ${monthName} ${year}...`);
+
+            try {
+                if (!SHEET_API_URL) {
+                    applyDashboardData(applyCountUpdatesLocally(year, monthIndex, updates));
+                    setModalStatus(`Saved ${updates.length} entries for ${monthName} ${year} on this device.`, 'success');
+                    if (document.getElementById('analytics-view').style.display === 'block') {
+                        changeAnalyticsYear(analyticsFilters.year || year);
+                    } else if (currentYear && dashboardData[currentYear]) {
+                        renderYear(currentYear);
+                    } else {
+                        renderYear('TOTAL COUNT');
+                    }
+                    setTimeout(() => closeAddCountModal(), 500);
+                    return;
+                }
+
+                const response = await fetch(getSheetApiUrl('updateCounts'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify({
+                        sheetId: SHEET_ID,
+                        year,
+                        monthIndex,
+                        monthColumn: getMonthColumnKey(monthIndex),
+                        updates
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Save failed (${response.status})`);
+                }
+
+                const result = await response.json();
+                if (!result.success) {
+                    throw new Error(result.message || 'Save failed');
+                }
+
+                if (result.data) {
+                    applyDashboardData(result.data);
+                } else {
+                    await refreshDashboardData();
+                }
+                setModalStatus(`Saved ${updates.length} entries for ${monthName} ${year}.`, 'success');
+
+                if (document.getElementById('analytics-view').style.display === 'block') {
+                    changeAnalyticsYear(analyticsFilters.year || year);
+                } else if (currentYear && dashboardData[currentYear]) {
+                    renderYear(currentYear);
+                } else {
+                    renderYear('TOTAL COUNT');
+                }
+
+                setTimeout(() => closeAddCountModal(), 500);
+            } catch (error) {
+                console.error('Error saving counts:', error);
+                setModalStatus(error.message || 'Unable to save changes right now.', 'error');
+            } finally {
+                setModalSavingState(false);
+            }
         }
 
         init();
