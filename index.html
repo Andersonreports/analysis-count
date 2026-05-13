@@ -48,12 +48,37 @@
 
         /* Header */
         .main-header {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
             margin-bottom: 2.5rem;
             padding: 1.5rem 0;
             text-align: center;
+        }
+
+        .sheet-btn {
+            position: absolute;
+            right: 0;
+            background: white;
+            color: var(--indigo);
+            border: 1px solid var(--border-color);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+
+        .sheet-btn:hover {
+            background: var(--bg-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .header-left {
@@ -493,6 +518,10 @@
                 <div class="logo-icon">🧬</div>
                 <h1>NGS Analysis Dashboard</h1>
             </div>
+            <a href="https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992" 
+               target="_blank" class="sheet-btn">
+                📊 Open Live Sheet
+            </a>
         </header>
 
         <main class="fade-in">
