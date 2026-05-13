@@ -263,31 +263,34 @@
         }
 
         .home-stat-card {
-            aspect-ratio: 4 / 3;
-            /* shorter (reduced vertical height) */
+            aspect-ratio: 2.4 / 1;
             min-height: 0;
-            padding: 1.75rem 2rem;
-            /* reduce vertical padding */
-            justify-content: space-between;
+            padding: 1.25rem 1.75rem;
+            justify-content: center;
             background: #f8fafc;
-            /* solid stat-card background */
+            border: 1px solid var(--border-color);
             border-left: 6px solid #475569;
+            gap: 0.25rem;
         }
 
         .home-stat-card.total-card {
-            border-left-color: #2563eb;
+            border-left-color: #3b82f6;
+            background-color: #eff6ff;
         }
 
         .home-stat-card.ngs-card {
-            border-left-color: #0f766e;
+            border-left-color: #10b981;
+            background-color: #f0fdf4;
         }
 
         .home-stat-card.nics-card {
-            border-left-color: #7c3aed;
+            border-left-color: #8b5cf6;
+            background-color: #f5f3ff;
         }
 
         .home-stat-card.analytics-card {
-            border-left-color: #be123c;
+            border-left-color: #f43f5e;
+            background-color: #fff1f2;
         }
 
         .summary-card:hover {
@@ -317,11 +320,7 @@
 
         .summary-card.interactive:hover {
             border-color: var(--indigo);
-            background: #f8fafc;
-        }
-
-        .summary-card.home-stat-card.interactive:hover {
-            background: #f8fafc;
+            filter: brightness(0.95);
         }
 
         .card-footer {
@@ -338,33 +337,18 @@
         }
 
         .home-stat-card .summary-value {
-            font-size: clamp(3.5rem, 6vw, 5.5rem);
-            line-height: 1;
-            color: #334155;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            line-height: 1.1;
+            color: #000000;
+            margin: 0.2rem 0;
         }
 
+        .home-stat-card .summary-label,
         .home-stat-card .card-footer {
-            color: #475569;
+            color: #000000;
         }
 
-        .total-card .summary-value,
-        .total-card .card-footer {
-            color: #2563eb;
-        }
-
-        .ngs-card .summary-value,
-        .ngs-card .card-footer {
-            color: #0f766e;
-        }
-
-        .nics-card .summary-value,
-        .nics-card .card-footer {
-            color: #7c3aed;
-        }
-
-        .analytics-card .card-footer {
-            color: #be123c;
-        }
+        /* Specific color overrides removed to maintain black text */
 
         select,
         input {
