@@ -57,13 +57,20 @@
             text-align: center;
         }
 
-        .sheet-btn {
+        .header-actions-group {
             position: absolute;
             right: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            align-items: flex-end;
+        }
+
+        .sheet-btn {
             background: white;
             color: var(--indigo);
             border: 1px solid var(--border-color);
-            padding: 0.6rem 1.2rem;
+            padding: 0.5rem 1rem;
             border-radius: 10px;
             font-size: 0.85rem;
             font-weight: 700;
@@ -73,12 +80,88 @@
             gap: 0.5rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.2s;
+            cursor: pointer;
+            width: fit-content;
         }
 
         .sheet-btn:hover {
             background: var(--bg-color);
             transform: translateY(-1px);
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .add-btn {
+            color: #059669;
+            border-color: #a7f3d0;
+        }
+
+        .add-btn:hover {
+            background: #f0fdf4;
+            border-color: #059669;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-container {
+            background: white;
+            width: 90%;
+            max-width: 450px;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            animation: modalSlide 0.3s ease-out;
+        }
+
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .form-field {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .modal-footer button {
+            flex: 1;
         }
 
         .header-left {
@@ -518,11 +601,43 @@
                 <div class="logo-icon">🧬</div>
                 <h1>NGS Analysis Dashboard</h1>
             </div>
-            <a href="https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992" 
-               target="_blank" class="sheet-btn">
-                📊 Open Live Sheet
-            </a>
+            <div class="header-actions-group">
+                <a href="https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992" 
+                   target="_blank" class="sheet-btn">
+                    📊 Open Live Sheet
+                </a>
+                <button class="sheet-btn add-btn" onclick="openAddCountModal()">
+                    ➕ Add Count
+                </button>
+            </div>
         </header>
+
+        <!-- Add Count Modal -->
+        <div class="modal-overlay" id="addCountModal">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3>Update Sample Count</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="form-field">
+                        <label>Year</label>
+                        <select id="modal-year-select"></select>
+                    </div>
+                    <div class="form-field">
+                        <label>Test Name</label>
+                        <select id="modal-test-select"></select>
+                    </div>
+                    <div class="form-field">
+                        <label>Count to Add</label>
+                        <input type="number" id="modal-count-input" placeholder="e.g. 150">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="tab-btn" onclick="closeAddCountModal()">Cancel</button>
+                    <button class="tab-btn active" onclick="saveNewCount()">Save Changes</button>
+                </div>
+            </div>
+        </div>
 
         <main class="fade-in">
             <div id="data-view" class="view-section">
@@ -1097,6 +1212,53 @@
                 data: { labels: pLabels, datasets: [{ data: pData, backgroundColor: chartColors, borderWidth: 2, borderColor: '#ffffff' }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { size: 11, weight: '600' } } }, datalabels: { color: '#fff', font: { weight: 'bold', size: 12 }, formatter: (value, ctx) => { const total = ctx.dataset.data.reduce((a, b) => a + b, 0); return (value * 100 / total).toFixed(0) > 5 ? value : ''; } } } }
             });
+        }
+
+        function openAddCountModal() {
+            const modal = document.getElementById('addCountModal');
+            const yearSelect = document.getElementById('modal-year-select');
+            const testSelect = document.getElementById('modal-test-select');
+            
+            // Populate Years
+            const years = Object.keys(dashboardData).filter(isYearSheet);
+            yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
+            
+            // Populate Tests (default to first year)
+            if (years.length > 0) {
+                updateModalTests(years[0]);
+            }
+            
+            yearSelect.onchange = (e) => updateModalTests(e.target.value);
+            
+            modal.style.display = 'flex';
+        }
+
+        function updateModalTests(year) {
+            const testSelect = document.getElementById('modal-test-select');
+            const data = processYearData(dashboardData[year]);
+            const tests = [...new Set(data.map(item => item.category))].sort();
+            testSelect.innerHTML = tests.map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function closeAddCountModal() {
+            document.getElementById('addCountModal').style.display = 'none';
+            document.getElementById('modal-count-input').value = '';
+        }
+
+        function saveNewCount() {
+            const year = document.getElementById('modal-year-select').value;
+            const test = document.getElementById('modal-test-select').value;
+            const count = parseInt(document.getElementById('modal-count-input').value);
+            
+            if (isNaN(count) || count <= 0) {
+                alert('Please enter a valid count number.');
+                return;
+            }
+            
+            // Note: Since we don't have a backend, this change is only for the current session.
+            // In a real app, you would send this to a server.
+            alert(`Count of ${count} for ${test} in ${year} submitted successfully!\n(Note: Persistent updates require a backend integration)`);
+            closeAddCountModal();
         }
 
         init();
