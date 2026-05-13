@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NGS Analysis Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <style>
@@ -15,7 +17,8 @@
             --card-bg: #ffffff;
             --text-primary: #1e1b4b;
             --text-secondary: #64748b;
-            --accent-color: #6366f1; /* Indigo */
+            --accent-color: #6366f1;
+            /* Indigo */
             --accent-hover: #4f46e5;
             --border-color: #e2e8f0;
             --purple: #8b5cf6;
@@ -102,18 +105,29 @@
             border-color: var(--indigo);
         }
 
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-bottom: 1.5rem;
+        }
+
         /* Layout */
         .analytics-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 1.5rem;
-            align-items: flex-start;
+            display: block;
         }
 
         .analytics-main {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+        }
+
+        .pie-filter-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 360px;
+            gap: 1.5rem;
+            align-items: flex-start;
         }
 
         /* Cards */
@@ -146,6 +160,15 @@
         .header-actions {
             display: flex;
             gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .chart-filter {
+            width: 140px;
+            padding: 0.55rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 700;
         }
 
         .badge {
@@ -156,9 +179,20 @@
             text-transform: uppercase;
         }
 
-        .badge-indigo { background: #e0e7ff; color: #4338ca; }
-        .badge-purple { background: #f3e8ff; color: #7e22ce; }
-        .badge-light { background: #f1f5f9; color: #475569; }
+        .badge-indigo {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .badge-purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .badge-light {
+            background: #f1f5f9;
+            color: #475569;
+        }
 
         /* Sidebar */
         .sidebar-filters {
@@ -198,7 +232,9 @@
             margin-left: 0.5rem;
         }
 
-        .header-links span:hover { text-decoration: underline; }
+        .header-links span:hover {
+            text-decoration: underline;
+        }
 
         /* Summary Stats */
         .summary-stats {
@@ -206,6 +242,12 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
+        }
+
+        .home-stat-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1.75rem;
+            align-items: stretch;
         }
 
         .summary-card {
@@ -220,6 +262,34 @@
             transition: transform 0.2s;
         }
 
+        .home-stat-card {
+            aspect-ratio: 4 / 3;
+            /* shorter (reduced vertical height) */
+            min-height: 0;
+            padding: 1.75rem 2rem;
+            /* reduce vertical padding */
+            justify-content: space-between;
+            background: #f8fafc;
+            /* solid stat-card background */
+            border-left: 6px solid #475569;
+        }
+
+        .home-stat-card.total-card {
+            border-left-color: #2563eb;
+        }
+
+        .home-stat-card.ngs-card {
+            border-left-color: #0f766e;
+        }
+
+        .home-stat-card.nics-card {
+            border-left-color: #7c3aed;
+        }
+
+        .home-stat-card.analytics-card {
+            border-left-color: #be123c;
+        }
+
         .summary-card:hover {
             transform: translateY(-3px);
         }
@@ -231,13 +301,26 @@
             letter-spacing: 0.05em;
         }
 
+        .home-stat-card .summary-label {
+            font-size: 0.9rem;
+        }
+
         .summary-card.interactive {
             cursor: pointer;
             border: 2px solid transparent;
         }
 
+        .summary-card.home-stat-card.interactive {
+            border: 1px solid var(--border-color);
+            border-left-width: 6px;
+        }
+
         .summary-card.interactive:hover {
             border-color: var(--indigo);
+            background: #f8fafc;
+        }
+
+        .summary-card.home-stat-card.interactive:hover {
             background: #f8fafc;
         }
 
@@ -254,7 +337,37 @@
             color: var(--indigo);
         }
 
-        select, input {
+        .home-stat-card .summary-value {
+            font-size: clamp(3.5rem, 6vw, 5.5rem);
+            line-height: 1;
+            color: #334155;
+        }
+
+        .home-stat-card .card-footer {
+            color: #475569;
+        }
+
+        .total-card .summary-value,
+        .total-card .card-footer {
+            color: #2563eb;
+        }
+
+        .ngs-card .summary-value,
+        .ngs-card .card-footer {
+            color: #0f766e;
+        }
+
+        .nics-card .summary-value,
+        .nics-card .card-footer {
+            color: #7c3aed;
+        }
+
+        .analytics-card .card-footer {
+            color: #be123c;
+        }
+
+        select,
+        input {
             width: 100%;
             padding: 0.75rem;
             border-radius: 8px;
@@ -266,7 +379,8 @@
             outline: none;
         }
 
-        select:focus, input:focus {
+        select:focus,
+        input:focus {
             border-color: var(--indigo);
             background: white;
         }
@@ -333,21 +447,53 @@
             height: 500px;
         }
 
+        .line-container {
+            height: 340px;
+        }
+
         .fade-in {
             animation: fadeIn 0.6s ease-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @media (max-width: 1000px) {
-            .analytics-layout { grid-template-columns: 1fr; }
-            .sidebar-filters { position: static; }
+            .pie-filter-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-filters {
+                position: static;
+            }
+
+            .home-stat-grid {
+                grid-template-columns: repeat(2, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 560px) {
+            .home-stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .home-stat-card {
+                aspect-ratio: auto;
+                min-height: 220px;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header class="main-header fade-in">
@@ -357,31 +503,41 @@
             </div>
         </header>
 
-        <nav class="nav-tabs fade-in" id="year-nav">
-            <!-- Tabs injected by JS -->
-        </nav>
-
         <main class="fade-in">
             <div id="data-view" class="view-section">
                 <div class="card">
-                    <h2 id="table-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">System Summary</h2>
+                    <div id="data-back-slot"></div>
+                    <h2 id="table-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">System
+                        Summary</h2>
                     <div class="filter-bar" style="display: none; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
                         <div class="filter-group" style="flex: 1; min-width: 150px;">
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Year</label>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Year</label>
                             <select id="year-filter"></select>
                         </div>
                         <div class="filter-group" style="flex: 1; min-width: 150px;">
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Month</label>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Month</label>
                             <select id="month-filter">
                                 <option value="all">All Months</option>
-                                <option value="0">Jan</option><option value="1">Feb</option><option value="2">Mar</option>
-                                <option value="3">Apr</option><option value="4">May</option><option value="5">Jun</option>
-                                <option value="6">Jul</option><option value="7">Aug</option><option value="8">Sep</option>
-                                <option value="9">Oct</option><option value="10">Nov</option><option value="11">Dec</option>
+                                <option value="0">Jan</option>
+                                <option value="1">Feb</option>
+                                <option value="2">Mar</option>
+                                <option value="3">Apr</option>
+                                <option value="4">May</option>
+                                <option value="5">Jun</option>
+                                <option value="6">Jul</option>
+                                <option value="7">Aug</option>
+                                <option value="8">Sep</option>
+                                <option value="9">Oct</option>
+                                <option value="10">Nov</option>
+                                <option value="11">Dec</option>
                             </select>
                         </div>
                         <div class="filter-group" style="flex: 1; min-width: 150px;">
-                            <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Test Type</label>
+                            <label
+                                style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.5rem;">Test
+                                Type</label>
                             <select id="test-filter">
                                 <option value="all">All Tests</option>
                             </select>
@@ -392,6 +548,7 @@
             </div>
 
             <div id="analytics-view" class="view-section" style="display: none;">
+                <button class="tab-btn back-btn" onclick="goBackHome()">← Back to Home</button>
                 <div class="analytics-layout">
                     <div class="analytics-main">
                         <div class="card chart-card">
@@ -401,6 +558,7 @@
                                     <p>Sample volume comparison by category</p>
                                 </div>
                                 <div class="header-actions">
+                                    <select id="bar-year-filter" class="chart-filter"></select>
                                     <span class="badge badge-indigo">Bar Chart</span>
                                     <span class="badge badge-light" id="bar-total-label">Total: 0</span>
                                 </div>
@@ -410,56 +568,67 @@
                             </div>
                         </div>
 
-                        <div class="card chart-card">
-                            <div class="chart-header">
-                                <div class="header-titles">
-                                    <h3 id="pie-chart-title">Test-wise Sample Count</h3>
-                                    <p>Distribution of samples by test type</p>
+                        <div class="pie-filter-layout">
+                            <div class="card chart-card">
+                                <div class="chart-header">
+                                    <div class="header-titles">
+                                        <h3 id="pie-chart-title">Test-wise Sample Count</h3>
+                                        <p>Distribution of samples by test type</p>
+                                    </div>
+                                    <div class="header-actions">
+                                        <span class="badge badge-purple">Pie Chart</span>
+                                        <span class="badge badge-light" id="pie-total-label">Total: 0</span>
+                                    </div>
                                 </div>
-                                <div class="header-actions">
-                                    <span class="badge badge-purple">Pie Chart</span>
-                                    <span class="badge badge-light" id="pie-total-label">Total: 0</span>
+                                <div class="chart-container pie-container">
+                                    <canvas id="testPieChart"></canvas>
                                 </div>
                             </div>
-                            <div class="chart-container pie-container">
-                                <canvas id="testPieChart"></canvas>
-                            </div>
+
+                            <aside class="sidebar-filters card">
+                                <div class="sidebar-section">
+                                    <label class="sidebar-label">YEAR</label>
+                                    <select id="analytics-year-filter"></select>
+                                </div>
+
+                                <div class="sidebar-section">
+                                    <label class="sidebar-label">MONTH</label>
+                                    <select id="analytics-month-filter">
+                                        <option value="all">All Months</option>
+                                        <option value="0">January</option>
+                                        <option value="1">February</option>
+                                        <option value="2">March</option>
+                                        <option value="3">April</option>
+                                        <option value="4">May</option>
+                                        <option value="5">June</option>
+                                        <option value="6">July</option>
+                                        <option value="7">August</option>
+                                        <option value="8">September</option>
+                                        <option value="9">October</option>
+                                        <option value="10">November</option>
+                                        <option value="11">December</option>
+                                    </select>
+                                </div>
+
+                                <div class="sidebar-section">
+                                    <div class="section-header">
+                                        <label class="sidebar-label">TESTS</label>
+                                        <div class="header-links">
+                                            <span onclick="selectAllTests()">Select All</span>
+                                            <span onclick="clearAllTests()">Clear</span>
+                                        </div>
+                                    </div>
+                                    <div class="checklist-container" id="tests-checklist"></div>
+                                </div>
+
+                                <div class="sidebar-section">
+                                    <label class="sidebar-label">MANUAL SEARCH</label>
+                                    <input type="text" id="test-search" placeholder="Type test name..."
+                                        oninput="filterChecklist()">
+                                </div>
+                            </aside>
                         </div>
                     </div>
-
-                    <aside class="sidebar-filters card">
-                        <div class="sidebar-section">
-                            <label class="sidebar-label">YEAR</label>
-                            <select id="analytics-year-filter"></select>
-                        </div>
-                        
-                        <div class="sidebar-section">
-                            <label class="sidebar-label">MONTH</label>
-                            <select id="analytics-month-filter">
-                                <option value="all">All Months</option>
-                                <option value="0">January</option><option value="1">February</option><option value="2">March</option>
-                                <option value="3">April</option><option value="4">May</option><option value="5">June</option>
-                                <option value="6">July</option><option value="7">August</option><option value="8">September</option>
-                                <option value="9">October</option><option value="10">November</option><option value="11">December</option>
-                            </select>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <div class="section-header">
-                                <label class="sidebar-label">TESTS</label>
-                                <div class="header-links">
-                                    <span onclick="selectAllTests()">Select All</span>
-                                    <span onclick="clearAllTests()">Clear</span>
-                                </div>
-                            </div>
-                            <div class="checklist-container" id="tests-checklist"></div>
-                        </div>
-
-                        <div class="sidebar-section">
-                            <label class="sidebar-label">MANUAL SEARCH</label>
-                            <input type="text" id="test-search" placeholder="Type test name..." oninput="filterChecklist()">
-                        </div>
-                    </aside>
                 </div>
             </div>
         </main>
@@ -473,6 +642,7 @@
 
         let barChartInstance = null;
         let pieChartInstance = null;
+        let yearlyTrendChartInstance = null;
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const chartColors = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f59e0b', '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#2dd4bf'];
@@ -488,38 +658,15 @@
                 const response = await fetch('data.json');
                 dashboardData = await response.json();
                 const years = Object.keys(dashboardData);
-                
-                setupNav(years);
+
                 setupDataFilters(years);
                 setupAnalyticsFilters(years);
-                
+
                 const defaultView = years.includes('TOTAL COUNT') ? 'TOTAL COUNT' : years[0];
-                const targetBtn = Array.from(document.querySelectorAll('.tab-btn'))
-                    .find(btn => btn.textContent === defaultView);
-                renderYear(defaultView, targetBtn);
+                renderYear(defaultView);
             } catch (error) {
                 console.error('Error loading data:', error);
             }
-        }
-
-        function setupNav(years) {
-            const nav = document.getElementById('year-nav');
-            nav.innerHTML = '';
-            const categorySheets = years.filter(year => !isYearSheet(year) && year !== 'HISTORICAL_YEARS');
-            
-            categorySheets.forEach((year) => {
-                const btn = document.createElement('button');
-                btn.className = 'tab-btn';
-                btn.textContent = year;
-                btn.onclick = () => renderYear(year, btn);
-                nav.appendChild(btn);
-            });
-
-            const analyticsBtn = document.createElement('button');
-            analyticsBtn.className = 'tab-btn';
-            analyticsBtn.textContent = 'ANALYTICS';
-            analyticsBtn.onclick = () => showAnalytics(analyticsBtn);
-            nav.appendChild(analyticsBtn);
         }
 
         function setupDataFilters(years) {
@@ -537,7 +684,7 @@
 
             yearSelect.onchange = (e) => {
                 analyticsFilters.year = e.target.value;
-                if (document.getElementById('analytics-view').style.display === 'flex') updateAnalytics();
+                if (document.getElementById('analytics-view').style.display !== 'none') updateAnalytics();
             };
             monthSelect.onchange = (e) => { currentDataFilters.month = e.target.value; applyDataFilters(); };
             testSelect.onchange = (e) => { currentDataFilters.test = e.target.value; applyDataFilters(); };
@@ -545,23 +692,40 @@
 
         function setupAnalyticsFilters(years) {
             const yearSelect = document.getElementById('analytics-year-filter');
+            const barYearSelect = document.getElementById('bar-year-filter');
             const monthSelect = document.getElementById('analytics-month-filter');
             const validYears = years.filter(isYearSheet);
-            
+
             yearSelect.innerHTML = '';
+            barYearSelect.innerHTML = '';
             validYears.forEach(y => {
-                const opt = document.createElement('option');
-                opt.value = y; opt.textContent = y.replace('SAMPLES ANALYSED IN ', '');
-                yearSelect.appendChild(opt);
+                [yearSelect, barYearSelect].forEach(select => {
+                    const opt = document.createElement('option');
+                    opt.value = y; opt.textContent = y.replace('SAMPLES ANALYSED IN ', '');
+                    select.appendChild(opt);
+                });
             });
 
-            yearSelect.onchange = (e) => { 
-                analyticsFilters.year = e.target.value; 
-                populateTestsChecklist();
-                updateAnalytics(); 
+            if (!analyticsFilters.year && validYears.length > 0) analyticsFilters.year = validYears[0];
+            yearSelect.value = analyticsFilters.year;
+            barYearSelect.value = analyticsFilters.year;
+
+            yearSelect.onchange = (e) => {
+                changeAnalyticsYear(e.target.value);
+            };
+            barYearSelect.onchange = (e) => {
+                changeAnalyticsYear(e.target.value);
             };
             monthSelect.onchange = (e) => { analyticsFilters.month = e.target.value; updateAnalytics(); };
             populateTestsChecklist();
+        }
+
+        function changeAnalyticsYear(year) {
+            analyticsFilters.year = year;
+            document.getElementById('analytics-year-filter').value = year;
+            document.getElementById('bar-year-filter').value = year;
+            populateTestsChecklist();
+            updateAnalytics();
         }
 
         function populateTestsChecklist() {
@@ -604,7 +768,7 @@
         }
 
         function calculateTotals() {
-            let totalAll = 0, ngsTotal = 0, nicsTotal = 0, analyticsTotal = 0;
+            let totalAll = 0, ngsTotal = 0, nicsTotal = 0;
             const yearlyBreakdown = [];
             const addedYears = new Set();
             if (dashboardData['NGS']) ngsTotal = processYearData(dashboardData['NGS']).reduce((sum, item) => sum + item.total, 0);
@@ -626,7 +790,6 @@
                     const yearLabel = String(key);
                     yearlyBreakdown.push({ year: yearLabel, count: yearSum });
                     addedYears.add(yearLabel);
-                    if (key === analyticsFilters.year) analyticsTotal = yearSum;
                 }
             });
             if (dashboardData['TOTAL COUNT']) {
@@ -645,7 +808,7 @@
                     });
                 }
             }
-            return { totalAll, ngsTotal, nicsTotal, analyticsTotal, yearlyBreakdown };
+            return { totalAll, ngsTotal, nicsTotal, yearlyBreakdown };
         }
 
         function renderYear(year, btn) {
@@ -655,11 +818,12 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
             if (year === 'TOTAL COUNT') {
-                renderYearlySummary();
+                renderYearlySummary(false);
             } else {
                 const container = document.getElementById('table-content');
                 const headerTitle = document.getElementById('table-title');
                 const filterBar = document.querySelector('#data-view .filter-bar');
+                setDataBackButton('<button class="tab-btn back-btn" onclick="goBackHome()">← Back to Home</button>');
                 headerTitle.textContent = `${year} Breakdown`;
                 filterBar.style.display = 'flex';
                 populateTestDropdown(dashboardData[year]);
@@ -667,38 +831,157 @@
             }
         }
 
-        function renderYearlySummary() {
+        function goBackHome() {
+            renderYear('TOTAL COUNT');
+        }
+
+        function setDataBackButton(html = '') {
+            document.getElementById('data-back-slot').innerHTML = html;
+        }
+
+        function renderYearlySummary(showYearCards = false) {
             const container = document.getElementById('table-content');
             const headerTitle = document.getElementById('table-title');
             const filterBar = document.querySelector('#data-view .filter-bar');
-            headerTitle.textContent = "Year-wise Total Breakdown";
+            setDataBackButton(showYearCards ? '<button class="tab-btn back-btn" onclick="goBackHome()">← Back to Home</button>' : '');
+            headerTitle.textContent = showYearCards ? "Year-wise Total Breakdown" : "System Summary";
             filterBar.style.display = 'none';
-            const allYears = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
             const totals = calculateTotals();
             const yearLookup = {};
             totals.yearlyBreakdown.forEach(item => { yearLookup[item.year] = item.count; });
-            let html = `<div class="summary-stats fade-in"><div class="summary-card"><span class="summary-label">TOTAL COUNT</span><span class="summary-value">${totals.totalAll.toLocaleString()}</span></div>`;
-            allYears.forEach(year => {
-                const yearStr = String(year);
-                const count = yearLookup[yearStr] || 0;
-                const hasData = dashboardData[yearStr] && count > 0;
-                if (hasData) {
-                    html += `<div class="summary-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
-                } else {
-                    html += `<div class="summary-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
+            let html = `
+                <div class="summary-stats home-stat-grid fade-in">
+                    <div class="summary-card home-stat-card total-card interactive" onclick="renderYearlySummary(true)">
+                        <span class="summary-label">TOTAL COUNT</span>
+                        <span class="summary-value">${totals.totalAll.toLocaleString()}</span>
+                        <span class="card-footer">View year-wise count →</span>
+                    </div>
+                    <div class="summary-card home-stat-card ngs-card interactive" onclick="renderYear('NGS')">
+                        <span class="summary-label">NGS</span>
+                        <span class="summary-value">${totals.ngsTotal.toLocaleString()}</span>
+                        <span class="card-footer">View NGS table →</span>
+                    </div>
+                    <div class="summary-card home-stat-card nics-card interactive" onclick="renderYear('NICS')">
+                        <span class="summary-label">NICS</span>
+                        <span class="summary-value">${totals.nicsTotal.toLocaleString()}</span>
+                        <span class="card-footer">View NICS table →</span>
+                    </div>
+                    <div class="summary-card home-stat-card analytics-card interactive" onclick="showAnalytics()">
+                        <span class="summary-label">ANALYTICS</span>
+                        <span class="card-footer">Open charts →</span>
+                    </div>
+                </div>`;
+
+            if (!showYearCards) {
+                html += `
+                    <div class="card chart-card fade-in">
+                        <div class="chart-header">
+                            <div class="header-titles">
+                                <h3>Year-wise Total Count Growth</h3>
+                                <p>Total sample count trend from 2018 to 2026</p>
+                            </div>
+                            <div class="header-actions">
+                                <span class="badge badge-indigo">Line Chart</span>
+                            </div>
+                        </div>
+                        <div class="chart-container line-container">
+                            <canvas id="yearlyTrendChart"></canvas>
+                        </div>
+                    </div>`;
+            }
+
+            if (showYearCards) {
+                const allYears = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+                html += '<div class="summary-stats fade-in">';
+                allYears.forEach(year => {
+                    const yearStr = String(year);
+                    const count = yearLookup[yearStr] || 0;
+                    const hasData = dashboardData[yearStr] && count > 0;
+                    if (hasData) {
+                        html += `<div class="summary-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
+                    } else {
+                        html += `<div class="summary-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
+                    }
+                });
+                html += '</div>';
+            }
+
+            container.innerHTML = html;
+            renderYearlyTrendChart(totals.yearlyBreakdown);
+        }
+
+        function renderYearlyTrendChart(yearlyBreakdown) {
+            const canvas = document.getElementById('yearlyTrendChart');
+            if (!canvas) {
+                if (yearlyTrendChartInstance) {
+                    yearlyTrendChartInstance.destroy();
+                    yearlyTrendChartInstance = null;
+                }
+                return;
+            }
+
+            const yearLookup = {};
+            yearlyBreakdown.forEach(item => { yearLookup[item.year] = item.count; });
+            const labels = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026].map(String);
+            const values = labels.map(year => yearLookup[year] || 0);
+
+            if (yearlyTrendChartInstance) yearlyTrendChartInstance.destroy();
+            yearlyTrendChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Total Count',
+                        data: values,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.12)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            align: 'top',
+                            anchor: 'end',
+                            color: '#4338ca',
+                            font: { weight: 'bold' },
+                            formatter: value => value.toLocaleString()
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#eef2ff' },
+                            ticks: { callback: value => value.toLocaleString() }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { weight: '700' } }
+                        }
+                    }
                 }
             });
-            container.innerHTML = html + '</div>';
         }
 
         function renderYearTable(year) {
             const container = document.getElementById('table-content');
             const headerTitle = document.getElementById('table-title');
+            setDataBackButton('<div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;"><button class="tab-btn" onclick="renderYearlySummary(true)">← Back to Year Overview</button><button class="tab-btn" onclick="goBackHome()">Back to Home</button></div>');
             headerTitle.textContent = `${year} — Monthly Breakdown`;
             const dataRows = dashboardData[year];
             if (!dataRows) { container.innerHTML = '<p>No data available.</p>'; return; }
             const data = processYearData(dataRows);
-            let html = `<div style="margin-bottom: 1.5rem;"><button class="tab-btn" onclick="renderYearlySummary()">← Back to Year Overview</button></div><table><thead><tr><th>Sample Category</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+            let html = `<table><thead><tr><th>Sample Category</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
             data.forEach(item => {
                 html += `<tr><td style="font-weight: 600;">${item.category}</td>${item.monthly.map(v => `<td>${v || '-'}</td>`).join('')}<td style="font-weight: 800; color: var(--accent-color);">${item.total}</td></tr>`;
             });
@@ -707,9 +990,9 @@
 
         function showAnalytics(btn) {
             document.getElementById('data-view').style.display = 'none';
-            document.getElementById('analytics-view').style.display = 'flex';
+            document.getElementById('analytics-view').style.display = 'block';
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            if (btn) btn.classList.add('active');
             updateAnalytics();
         }
 
@@ -798,4 +1081,5 @@
         init();
     </script>
 </body>
+
 </html>
