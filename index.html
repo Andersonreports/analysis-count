@@ -1405,7 +1405,7 @@
             if (!dataRows) { container.innerHTML = '<p>No NICS data available.</p>'; return; }
 
             const data = processYearData(dataRows);
-            let html = `<table><thead><tr><th>Sample Category</th><th>Count</th></tr></thead><tbody>`;
+            let html = `<table><thead><tr><th>Month</th><th>Count</th></tr></thead><tbody>`;
             let totalCount = 0;
             data.forEach(item => {
                 html += `<tr><td style="font-weight: 600;">${item.category}</td><td style="font-weight: 800; color: var(--accent-color);">${item.total}</td></tr>`;
