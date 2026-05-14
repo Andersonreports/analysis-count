@@ -1176,7 +1176,7 @@
             document.getElementById('test-filter').innerHTML = '';
             document.getElementById('analytics-year-filter').innerHTML = '';
             document.getElementById('bar-year-filter').innerHTML = '';
-            document.getElementById('tests-checklist').innerHTML = '';
+            document.getElementById('pie-chart-test-filter').innerHTML = '';
 
             currentDataFilters = { month: 'all', test: 'all' };
             analyticsFilters = { year: '', month: 'all', selectedTests: new Set() };
@@ -1284,42 +1284,31 @@
         }
 
         function populateTestsChecklist() {
-            const container = document.getElementById('tests-checklist');
+            const select = document.getElementById('pie-chart-test-filter');
             if (!analyticsFilters.year || !dashboardData[analyticsFilters.year]) return;
             const data = processYearData(dashboardData[analyticsFilters.year]);
             const tests = [...new Set(data.map(item => item.category))].sort();
-            container.innerHTML = '';
+            select.innerHTML = '<option value="all">All Tests</option>';
             analyticsFilters.selectedTests.clear();
             tests.forEach(test => {
-                analyticsFilters.selectedTests.add(test);
-                const item = document.createElement('label');
-                item.className = 'check-item';
-                item.innerHTML = `<input type="checkbox" checked onchange="toggleTest('${test}', this.checked)"><span>${test}</span>`;
-                container.appendChild(item);
+                const opt = document.createElement('option');
+                opt.value = test;
+                opt.textContent = test;
+                select.appendChild(opt);
             });
+            select.value = 'all';
+            analyticsFilters.selectedTests = new Set(tests);
         }
 
-        function toggleTest(test, isChecked) {
-            if (isChecked) analyticsFilters.selectedTests.add(test);
-            else analyticsFilters.selectedTests.delete(test);
-            updateAnalytics();
-        }
-
-        function selectAllTests() {
-            document.querySelectorAll('#tests-checklist input').forEach(cb => { cb.checked = true; analyticsFilters.selectedTests.add(cb.nextElementSibling.textContent); });
-            updateAnalytics();
-        }
-
-        function clearAllTests() {
-            document.querySelectorAll('#tests-checklist input').forEach(cb => { cb.checked = false; analyticsFilters.selectedTests.clear(); });
-            updateAnalytics();
-        }
-
-        function filterChecklist() {
-            const query = document.getElementById('test-search').value.toUpperCase();
-            document.querySelectorAll('.check-item').forEach(item => {
-                item.style.display = item.querySelector('span').textContent.toUpperCase().includes(query) ? 'flex' : 'none';
-            });
+        function changeTestFilter(testName) {
+            analyticsFilters.selectedTests.clear();
+            if (testName !== 'all') {
+                analyticsFilters.selectedTests.add(testName);
+            } else {
+                const data = processYearData(dashboardData[analyticsFilters.year]);
+                data.forEach(item => analyticsFilters.selectedTests.add(item.category));
+            }
+            updatePieChartOnly();
         }
 
         function calculateTotals() {
