@@ -671,6 +671,109 @@
                 min-height: 220px;
             }
         }
+
+        .sync-badge {
+            display: none;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 0.35rem 0.85rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            width: fit-content;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .sync-dot.live { background: #10b981; animation: syncPulse 2.5s ease-in-out infinite; }
+        .sync-dot.loading { background: #6366f1; animation: syncPulse 0.7s ease-in-out infinite; }
+        .sync-dot.error { background: #f43f5e; }
+        .sync-dot.local { background: #f59e0b; }
+
+        @keyframes syncPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.25; }
+        }
+
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 5rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            width: 38px;
+            height: 38px;
+            border: 3px solid #e0e7ff;
+            border-top-color: var(--indigo);
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .summary-card.year-card {
+            background: #f1f5f9;
+            border: 1px solid #0f172a;
+        }
+
+        .summary-card.year-card .summary-label {
+            color: #fafbfb;
+        }
+
+        .summary-card.year-card .summary-value {
+            color: #1e1b4b;
+        }
+
+        .summary-card.year-card.interactive:hover {
+            background: #505051;
+            border-color: #000000;
+            filter: none;
+        }
+
+        .modal-cancel-btn {
+            background: white !important;
+            color: #dc2626 !important;
+            border: 1.5px solid #fca5a5 !important;
+        }
+
+        .modal-cancel-btn:hover:not(:disabled) {
+            background: #fef2f2 !important;
+            border-color: #dc2626 !important;
+        }
+
+        .modal-save-btn {
+            background: #059669 !important;
+            color: white !important;
+            border: 1.5px solid #059669 !important;
+        }
+
+        .modal-save-btn:hover:not(:disabled) {
+            background: #047857 !important;
+            border-color: #047857 !important;
+        }
+
+        .modal-save-btn.is-saving {
+            background: #d97706 !important;
+            border-color: #d97706 !important;
+            color: white !important;
+        }
     </style>
 </head>
 
@@ -682,6 +785,10 @@
                 <h1>NGS Analysis Dashboard</h1>
             </div>
             <div class="header-actions-group">
+                <div id="sync-badge" class="sync-badge">
+                    <span id="sync-dot" class="sync-dot loading"></span>
+                    <span id="sync-text">Connecting…</span>
+                </div>
                 <button class="sheet-btn add-btn" onclick="openAddCountModal()">
                     ➕ Add Count
                 </button>
@@ -723,9 +830,8 @@
                     </div>
                     <div id="modal-save-status" class="modal-status"></div>
                     <div class="modal-footer">
-                        <button class="tab-btn" onclick="closeAddCountModal()">Cancel</button>
-                        <button id="modal-save-button" class="tab-btn active" onclick="saveNewCount()">Save
-                            Changes</button>
+                        <button class="tab-btn modal-cancel-btn" onclick="closeAddCountModal()">Cancel</button>
+                        <button id="modal-save-button" class="tab-btn modal-save-btn" onclick="saveNewCount()">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -872,7 +978,7 @@
         let pieChartInstance = null;
         let yearlyTrendChartInstance = null;
         const LIVE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992';
-        const SHEET_API_URL = ''; // Set this to your deployed Google Apps Script Web App URL to save changes to the live sheet.
+        const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbz5cBxcf7a-9V_VUahMmf0lcfKnD1gCtFl7slzsvPZWgXALqUO4sm-kz9KdtGYMAWR2/exec';
         const SHEET_ID = getSheetIdFromUrl(LIVE_SHEET_URL);
         const LOCAL_DATA_URL = 'data.json';
         const LOCAL_STORAGE_KEY = 'analysis-count-dashboard-data';
@@ -907,25 +1013,57 @@
             return url.toString();
         }
 
+        function setSyncStatus(state, time) {
+            const badge = document.getElementById('sync-badge');
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-text');
+            if (!badge) return;
+            badge.style.display = 'flex';
+            dot.className = 'sync-dot ' + state;
+            const ts = (time || new Date()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (state === 'live') text.textContent = `Live · Synced ${ts}`;
+            else if (state === 'loading') text.textContent = 'Syncing…';
+            else if (state === 'error') text.textContent = 'Sheet unavailable · Showing local data';
+            else if (state === 'local') text.textContent = 'Local data';
+        }
+
+        function showLoadingState() {
+            setSyncStatus('loading');
+            const title = document.getElementById('table-title');
+            const container = document.getElementById('table-content');
+            if (title) title.textContent = '';
+            if (container) container.innerHTML = `<div class="loading-state"><div class="loading-spinner"></div><span>Syncing with live sheet…</span></div>`;
+        }
+
         async function fetchDashboardData() {
+            if (SHEET_API_URL) {
+                try {
+                    const url = getSheetApiUrl('data', { sheetId: SHEET_ID });
+                    const response = await fetch(url, { cache: 'no-store' });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const result = await response.json();
+                    if (result && result.success === false) throw new Error(result.message || 'Sheet API error');
+                    const data = result && result.data ? result.data : result;
+                    setSyncStatus('live', new Date());
+                    return data;
+                } catch (err) {
+                    console.warn('Live sheet unavailable, falling back to local data:', err);
+                    setSyncStatus('error');
+                }
+            }
+
             const localData = getStoredDashboardData();
-            if (!SHEET_API_URL && localData) {
+            if (localData) {
+                if (!SHEET_API_URL) setSyncStatus('local');
                 return localData;
             }
 
-            const sourceUrl = getSheetApiUrl('data', { sheetId: SHEET_ID }) || LOCAL_DATA_URL;
-            const response = await fetch(sourceUrl, { cache: 'no-store' });
-            if (!response.ok) {
-                throw new Error(`Failed to load dashboard data (${response.status})`);
-            }
+            const response = await fetch(LOCAL_DATA_URL, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`Failed to load data (${response.status})`);
             const result = await response.json();
-            if (result && result.success === false) {
-                throw new Error(result.message || 'Failed to load dashboard data.');
-            }
             const nextData = result && result.data ? result.data : result;
-            if (!SHEET_API_URL) {
-                storeDashboardData(nextData);
-            }
+            storeDashboardData(nextData);
+            setSyncStatus('local');
             return nextData;
         }
 
@@ -1043,16 +1181,16 @@
             if (saveButton) {
                 saveButton.disabled = isSaving;
                 saveButton.textContent = isSaving ? 'Saving...' : 'Save Changes';
+                saveButton.classList.toggle('is-saving', isSaving);
             }
             if (cancelButton) {
                 cancelButton.disabled = isSaving;
             }
-            inputs.forEach(input => {
-                input.disabled = isSaving;
-            });
+            inputs.forEach(input => { input.disabled = isSaving; });
         }
 
         async function init() {
+            showLoadingState();
             try {
                 applyDashboardData(await fetchDashboardData());
                 const years = Object.keys(dashboardData);
@@ -1060,6 +1198,9 @@
                 renderYear(defaultView);
             } catch (error) {
                 console.error('Error loading data:', error);
+                const container = document.getElementById('table-content');
+                if (container) container.innerHTML = `<div class="loading-state" style="color:#dc2626;">Failed to load data. Please refresh the page.</div>`;
+                setSyncStatus('error');
             }
         }
 
@@ -1313,9 +1454,9 @@
                     const count = yearLookup[yearStr] || 0;
                     const hasData = dashboardData[yearStr] && count > 0;
                     if (hasData) {
-                        html += `<div class="summary-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
+                        html += `<div class="summary-card year-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
                     } else {
-                        html += `<div class="summary-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
+                        html += `<div class="summary-card year-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
                     }
                 });
                 html += '</div>';
