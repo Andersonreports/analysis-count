@@ -1240,11 +1240,17 @@
                 opt.value = y; opt.textContent = y.replace('SAMPLES ANALYSED IN ', '');
                 yearSelect.appendChild(opt);
             });
-            if (validYears.length > 0) analyticsFilters.year = validYears[0];
+            if (validYears.length > 0) {
+                currentYear = validYears[0];
+                yearSelect.value = currentYear;
+                analyticsFilters.year = validYears[0];
+            }
 
             yearSelect.onchange = (e) => {
-                analyticsFilters.year = e.target.value;
-                if (document.getElementById('analytics-view').style.display !== 'none') updateAnalytics();
+                currentYear = e.target.value;
+                if (document.getElementById('data-view').style.display !== 'none') {
+                    renderYear(currentYear);
+                }
             };
             monthSelect.onchange = (e) => { currentDataFilters.month = e.target.value; applyDataFilters(); };
             testSelect.onchange = (e) => { currentDataFilters.test = e.target.value; applyDataFilters(); };
@@ -1596,11 +1602,27 @@
 
         function processYearData(rows) {
             if (!rows) return [];
-            return rows.filter(row => row['Unnamed: 1'] && row['Unnamed: 1'] !== 'TOTAL' && row['Unnamed: 1'] !== 'S. No.' && !row['Unnamed: 1'].toString().includes('Sheet') && row['Unnamed: 1'] !== 'TEST NAME ')
-                .map(row => {
-                    const monthly = [row['Unnamed: 2'], row['Unnamed: 3'], row['Unnamed: 4'], row['Unnamed: 5'], row['Unnamed: 6'], row['Unnamed: 7'], row['Unnamed: 8'], row['Unnamed: 9'], row['Unnamed: 10'], row['Unnamed: 11'], row['Unnamed: 12'], row['Unnamed: 13']].map(v => (typeof v === 'number' ? v : 0));
-                    return { category: row['Unnamed: 1'].toString().toUpperCase(), monthly, total: monthly.reduce((a, b) => a + b, 0) };
-                }).filter(item => item.total > 0);
+            const grouped = new Map();
+
+            rows.forEach(row => {
+                const label = row['Unnamed: 1'];
+                if (!label) return;
+                const normalizedLabel = String(label).trim().toUpperCase();
+                if (normalizedLabel === 'TOTAL' || normalizedLabel === 'S. NO.' || normalizedLabel === 'TEST NAME' || normalizedLabel.includes('SHEET')) return;
+
+                const monthly = [row['Unnamed: 2'], row['Unnamed: 3'], row['Unnamed: 4'], row['Unnamed: 5'], row['Unnamed: 6'], row['Unnamed: 7'], row['Unnamed: 8'], row['Unnamed: 9'], row['Unnamed: 10'], row['Unnamed: 11'], row['Unnamed: 12'], row['Unnamed: 13']].map(v => (typeof v === 'number' ? v : 0));
+                const total = monthly.reduce((a, b) => a + b, 0);
+
+                if (!grouped.has(normalizedLabel)) {
+                    grouped.set(normalizedLabel, { category: normalizedLabel, monthly: [...monthly], total });
+                } else {
+                    const existing = grouped.get(normalizedLabel);
+                    existing.monthly = existing.monthly.map((value, index) => value + monthly[index]);
+                    existing.total += total;
+                }
+            });
+
+            return Array.from(grouped.values()).filter(item => item.total > 0);
         }
 
         function populateTestDropdown(dataRows) {
