@@ -78,7 +78,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transition: all 0.2s;
             cursor: pointer;
             width: fit-content;
@@ -87,7 +87,7 @@
         .sheet-btn:hover {
             background: var(--bg-color);
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .add-btn {
@@ -122,15 +122,22 @@
             max-height: min(88vh, 900px);
             border-radius: 20px;
             padding: 2rem;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             animation: modalSlide 0.3s ease-out;
             display: flex;
             flex-direction: column;
         }
 
         @keyframes modalSlide {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .modal-header {
@@ -717,7 +724,8 @@
                     <div id="modal-save-status" class="modal-status"></div>
                     <div class="modal-footer">
                         <button class="tab-btn" onclick="closeAddCountModal()">Cancel</button>
-                        <button id="modal-save-button" class="tab-btn active" onclick="saveNewCount()">Save Changes</button>
+                        <button id="modal-save-button" class="tab-btn active" onclick="saveNewCount()">Save
+                            Changes</button>
                     </div>
                 </div>
             </div>
@@ -864,7 +872,7 @@
         let pieChartInstance = null;
         let yearlyTrendChartInstance = null;
         const LIVE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1seF_CT-elxxs-uadnvIMPQpwfx0do3ihSY7fzNJv_Lw/edit?gid=1979285992#gid=1979285992';
-        const SHEET_API_URL = '';
+        const SHEET_API_URL = ''; // Set this to your deployed Google Apps Script Web App URL to save changes to the live sheet.
         const SHEET_ID = getSheetIdFromUrl(LIVE_SHEET_URL);
         const LOCAL_DATA_URL = 'data.json';
         const LOCAL_STORAGE_KEY = 'analysis-count-dashboard-data';
@@ -1470,15 +1478,15 @@
             const monthSelect = document.getElementById('modal-month-select');
             setModalStatus(SHEET_API_URL
                 ? 'Changes will be saved to the live sheet and refreshed here.'
-                : '');
-            
+                : 'Live sheet saving is not configured. Changes will only persist locally until SHEET_API_URL is set.');
+
             // Populate Years
             const years = Object.keys(dashboardData).filter(isYearSheet).sort((a, b) => Number(b) - Number(a));
             yearSelect.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
             if (years.length > 0) {
                 yearSelect.value = years[0];
             }
-            
+
             const currentMonthIndex = new Date().getMonth();
             monthSelect.value = String(currentMonthIndex);
 
@@ -1486,10 +1494,10 @@
             if (years.length > 0) {
                 renderModalTestInputs(yearSelect.value, currentMonthIndex);
             }
-            
+
             yearSelect.onchange = () => renderModalTestInputs(yearSelect.value, monthSelect.value);
             monthSelect.onchange = () => renderModalTestInputs(yearSelect.value, monthSelect.value);
-            
+
             modal.style.display = 'flex';
         }
 
