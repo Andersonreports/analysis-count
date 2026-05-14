@@ -1271,21 +1271,16 @@
             barYearSelect.value = analyticsFilters.year;
 
             yearSelect.onchange = (e) => {
-                changeAnalyticsYear(e.target.value);
+                analyticsFilters.year = e.target.value;
+                populateTestsChecklist();
+                updatePieChartOnly();
             };
             barYearSelect.onchange = (e) => {
-                changeAnalyticsYear(e.target.value);
+                analyticsFilters.year = e.target.value;
+                updateBarChartOnly();
             };
-            monthSelect.onchange = (e) => { analyticsFilters.month = e.target.value; updateAnalytics(); };
+            monthSelect.onchange = (e) => { analyticsFilters.month = e.target.value; updatePieChartOnly(); };
             populateTestsChecklist();
-        }
-
-        function changeAnalyticsYear(year) {
-            analyticsFilters.year = year;
-            document.getElementById('analytics-year-filter').value = year;
-            document.getElementById('bar-year-filter').value = year;
-            populateTestsChecklist();
-            updateAnalytics();
         }
 
         function populateTestsChecklist() {
@@ -1398,7 +1393,7 @@
             const headerTitle = document.getElementById('table-title');
             const filterBar = document.querySelector('#data-view .filter-bar');
             setDataBackButton('<button class="tab-btn back-btn" onclick="goBackHome()">← Back to Home</button>');
-            headerTitle.textContent = 'NICS Breakdown';
+            headerTitle.textContent = 'NICS Breakdown 2022';
             filterBar.style.display = 'none';
 
             const dataRows = dashboardData['NICS'];
@@ -1584,6 +1579,18 @@
             if (!analyticsFilters.year || !dashboardData[analyticsFilters.year]) return;
             let data = processYearData(dashboardData[analyticsFilters.year]).filter(item => analyticsFilters.selectedTests.has(item.category));
             updateBarChart(data);
+            updatePieChart(data);
+        }
+
+        function updateBarChartOnly() {
+            if (!analyticsFilters.year || !dashboardData[analyticsFilters.year]) return;
+            let data = processYearData(dashboardData[analyticsFilters.year]).filter(item => analyticsFilters.selectedTests.has(item.category));
+            updateBarChart(data);
+        }
+
+        function updatePieChartOnly() {
+            if (!analyticsFilters.year || !dashboardData[analyticsFilters.year]) return;
+            let data = processYearData(dashboardData[analyticsFilters.year]).filter(item => analyticsFilters.selectedTests.has(item.category));
             updatePieChart(data);
         }
 
