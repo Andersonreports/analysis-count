@@ -1213,6 +1213,8 @@
             if (btn) btn.classList.add('active');
             if (year === 'TOTAL COUNT') {
                 renderYearlySummary(false);
+            } else if (year === 'NICS') {
+                renderNICSBreakdown();
             } else {
                 const container = document.getElementById('table-content');
                 const headerTitle = document.getElementById('table-title');
@@ -1223,6 +1225,25 @@
                 populateTestDropdown(dashboardData[year]);
                 renderTable(dashboardData[year], container);
             }
+        }
+
+        function renderNICSBreakdown() {
+            const container = document.getElementById('table-content');
+            const headerTitle = document.getElementById('table-title');
+            const filterBar = document.querySelector('#data-view .filter-bar');
+            setDataBackButton('<button class="tab-btn back-btn" onclick="goBackHome()">← Back to Home</button>');
+            headerTitle.textContent = 'NICS Breakdown';
+            filterBar.style.display = 'none';
+
+            const dataRows = dashboardData['NICS'];
+            if (!dataRows) { container.innerHTML = '<p>No NICS data available.</p>'; return; }
+
+            const data = processYearData(dataRows);
+            let html = `<table><thead><tr><th>Sample Category</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+            data.forEach(item => {
+                html += `<tr><td style="font-weight: 600;">${item.category}</td>${item.monthly.map(v => `<td>${v || '-'}</td>`).join('')}<td style="font-weight: 800; color: var(--accent-color);">${item.total}</td></tr>`;
+            });
+            container.innerHTML = html + '</tbody></table>';
         }
 
         function goBackHome() {
