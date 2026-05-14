@@ -728,6 +728,25 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        .summary-card.year-card {
+            background: #f1f5f9;
+            border: 2.5px solid #0f172a;
+        }
+
+        .summary-card.year-card .summary-label {
+            color: #475569;
+        }
+
+        .summary-card.year-card .summary-value {
+            color: #1e1b4b;
+        }
+
+        .summary-card.year-card.interactive:hover {
+            background: #e2e8f0;
+            border-color: #000000;
+            filter: none;
+        }
+
         .modal-cancel-btn {
             background: white !important;
             color: #dc2626 !important;
@@ -1414,9 +1433,9 @@
                     const count = yearLookup[yearStr] || 0;
                     const hasData = dashboardData[yearStr] && count > 0;
                     if (hasData) {
-                        html += `<div class="summary-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
+                        html += `<div class="summary-card year-card interactive" onclick="renderYearTable('${yearStr}')"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span><span class="card-footer">View monthly table →</span></div>`;
                     } else {
-                        html += `<div class="summary-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
+                        html += `<div class="summary-card year-card"><span class="summary-label">${yearStr}</span><span class="summary-value">${count.toLocaleString()}</span></div>`;
                     }
                 });
                 html += '</div>';
