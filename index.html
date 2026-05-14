@@ -683,7 +683,7 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 0.35rem 0.85rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             width: fit-content;
         }
 
@@ -695,14 +695,34 @@
             flex-shrink: 0;
         }
 
-        .sync-dot.live { background: #10b981; animation: syncPulse 2.5s ease-in-out infinite; }
-        .sync-dot.loading { background: #6366f1; animation: syncPulse 0.7s ease-in-out infinite; }
-        .sync-dot.error { background: #f43f5e; }
-        .sync-dot.local { background: #f59e0b; }
+        .sync-dot.live {
+            background: #10b981;
+            animation: syncPulse 2.5s ease-in-out infinite;
+        }
+
+        .sync-dot.loading {
+            background: #6366f1;
+            animation: syncPulse 0.7s ease-in-out infinite;
+        }
+
+        .sync-dot.error {
+            background: #f43f5e;
+        }
+
+        .sync-dot.local {
+            background: #f59e0b;
+        }
 
         @keyframes syncPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.25; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.25;
+            }
         }
 
         .loading-state {
@@ -726,7 +746,11 @@
             animation: spin 0.75s linear infinite;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         .summary-card.year-card {
             background: #f1f5f9;
@@ -831,7 +855,8 @@
                     <div id="modal-save-status" class="modal-status"></div>
                     <div class="modal-footer">
                         <button class="tab-btn modal-cancel-btn" onclick="closeAddCountModal()">Cancel</button>
-                        <button id="modal-save-button" class="tab-btn modal-save-btn" onclick="saveNewCount()">Save Changes</button>
+                        <button id="modal-save-button" class="tab-btn modal-save-btn" onclick="saveNewCount()">Save
+                            Changes</button>
                     </div>
                 </div>
             </div>
@@ -1380,9 +1405,9 @@
             if (!dataRows) { container.innerHTML = '<p>No NICS data available.</p>'; return; }
 
             const data = processYearData(dataRows);
-            let html = `<table><thead><tr><th>Month</th>${months.map(m => `<th>${m}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+            let html = `<table><thead><tr><th>Sample Category</th><th>Count</th></tr></thead><tbody>`;
             data.forEach(item => {
-                html += `<tr><td style="font-weight: 600;">${item.category}</td>${item.monthly.map(v => `<td>${v || '-'}</td>`).join('')}<td style="font-weight: 800; color: var(--accent-color);">${item.total}</td></tr>`;
+                html += `<tr><td style="font-weight: 600;">${item.category}</td><td style="font-weight: 800; color: var(--accent-color);">${item.total}</td></tr>`;
             });
             container.innerHTML = html + '</tbody></table>';
         }
